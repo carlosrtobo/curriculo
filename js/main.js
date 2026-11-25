@@ -127,13 +127,17 @@ function montarBorboletas() {
   let s = '';
   E.borboletas = [];
   for (let i = 0; i < 22; i++) {
-    const b = { bx: x0 + ((i * 0.618) % 1) * (x1 - x0), by: 220 + ((i * 0.37) % 1) * 420, ph: i * 1.7, sc: 0.45 + ((i * 0.29) % 1) * 0.4 };
+    const b = { bx: x0 + ((i * 0.618) % 1) * (x1 - x0), by: 220 + ((i * 0.37) % 1) * 420, ph: i * 1.7, sc: 0.85 + ((i * 0.29) % 1) * 0.55, bater: 11, voo: 1 };
     E.borboletas.push(b);
     s += `<use href="#borbo${(i % 4) + 1}" class="borbo"/>`;
   }
+  // a exagerada: uma borboleta enorme que atravessa o meio do vale, batendo as asas devagar
+  E.borboletas.push({ bx: (x0 + x1) / 2, by: 330, ph: 0.4, sc: 3.6, bater: 4.5, voo: 2.6 });
+  s += `<use href="#borbo1" class="borbo"/>`;
   camada.interno.innerHTML = `<svg class="pedaco" data-x0="${x0}" data-x1="${x1}" style="left:${x0}px;width:${x1 - x0}px" viewBox="${x0} 0 ${x1 - x0} 1000" aria-hidden="true">${s}</svg>`;
   camada.pedacos = $$('.pedaco', camada.interno).map((p) => ({ el: p, x0, x1, vis: true }));
   E.borboEls = $$('.borbo', camada.interno);
+  atualizarBorboletas(0);                       // posiciona já (com movimento reduzido elas ficam paradas aí)
 }
 
 function animarAbertura() {
@@ -444,9 +448,9 @@ function atualizarParticulas(dt, v, fuga) {
 }
 function atualizarBorboletas(t) {
   E.borboletas.forEach((b, i) => {
-    const x = b.bx + Math.sin(t * 0.5 + b.ph) * 90 + Math.sin(t * 1.3 + b.ph) * 20;
-    const y = b.by + Math.sin(t * 0.9 + b.ph * 2) * 50;
-    const asa = 0.25 + 0.75 * Math.abs(Math.sin(t * 11 + b.ph));
+    const x = b.bx + (Math.sin(t * 0.5 + b.ph) * 90 + Math.sin(t * 1.3 + b.ph) * 20) * b.voo;
+    const y = b.by + Math.sin(t * 0.9 + b.ph * 2) * 50 * Math.min(b.voo, 1.6);
+    const asa = 0.25 + 0.75 * Math.abs(Math.sin(t * b.bater + b.ph + 0.8));
     const dir = Math.cos(t * 0.5 + b.ph) > 0 ? 1 : -1;
     E.borboEls[i].setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(dir * 12).toFixed(0)}) scale(${(b.sc * asa).toFixed(3)} ${b.sc.toFixed(3)})`);
   });

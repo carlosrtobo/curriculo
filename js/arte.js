@@ -147,10 +147,11 @@ export function defs() {
   s += sym('capim2', '-40 -90 80 90', capim(8, 60, cor.terra));
   s += sym('arvore', '-160 -420 320 420', arvore(4));
   s += sym('arvore2', '-160 -420 320 420', arvore(19, 300));
-  s += sym('borbo1', '-60 -50 120 100', borboleta(cor.terracota, cor.amarelo));
-  s += sym('borbo2', '-60 -50 120 100', borboleta(cor.amarelo, cor.terracota));
-  s += sym('borbo3', '-60 -50 120 100', borboleta(cor.roxo, cor.pessego));
-  s += sym('borbo4', '-60 -50 120 100', borboleta(cor.osso, cor.salviaEsc));
+  // borboletas azuis (pedido do Carlos): quatro tons de azul com pintas claras
+  s += sym('borbo1', '-60 -50 120 100', borboleta('#2F6FB0', '#BFE0F5'));
+  s += sym('borbo2', '-60 -50 120 100', borboleta('#4F9BD9', cor.osso));
+  s += sym('borbo3', '-60 -50 120 100', borboleta('#1F4C80', '#7FC4EE'));
+  s += sym('borbo4', '-60 -50 120 100', borboleta('#7DB8E8', '#1F4C80'));
   s += sym('folhaVoo', '-20 -10 40 20', folha(36, 10, cor.folha, 0, -18, 0));
   return `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${s}</defs></svg>`;
 }
