@@ -238,7 +238,7 @@ export const projetos = [
 // A chave de acesso pode ficar pública no código (ela só serve para enviar para esse e-mail).
 export const contato = {
   servico: 'https://api.web3forms.com/submit',
-  chave: '',
+  chave: 'bae4e5a9-d301-474a-8a07-dbf4e575a3fa',
   assunto: 'Mensagem pelo currículo interativo'
 };
 
