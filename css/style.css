@@ -12,6 +12,20 @@ html { scroll-behavior: auto; }
 body { margin: 0; background: #F2C27E; color: var(--terra); font-family: 'Alegreya', Georgia, serif; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 button { font: inherit; color: inherit; }
 
+/* ---------- barras de rolagem na identidade do site ---------- */
+html { scrollbar-color: var(--terracota) rgba(241, 233, 218, .6); }            /* Firefox */
+#painel, #tip-cursos, .texto-rolagem { scrollbar-color: var(--salvia-esc) rgba(74, 47, 32, .12); }
+::-webkit-scrollbar { width: 14px; height: 14px; }
+::-webkit-scrollbar-track { background: rgba(241, 233, 218, .55); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: var(--terracota); border: 3px solid var(--osso); border-radius: 10px; min-height: 48px; }
+::-webkit-scrollbar-thumb:hover { background: #A9432B; }
+::-webkit-scrollbar-thumb:active { background: var(--terra); }
+::-webkit-scrollbar-corner { background: transparent; }
+#painel::-webkit-scrollbar, #tip-cursos::-webkit-scrollbar { width: 12px; }
+#painel::-webkit-scrollbar-track, #tip-cursos::-webkit-scrollbar-track { background: rgba(74, 47, 32, .1); border-radius: 10px; margin: 14px 0; }
+#painel::-webkit-scrollbar-thumb, #tip-cursos::-webkit-scrollbar-thumb { background: var(--salvia-esc); border: 3px solid var(--osso); border-radius: 10px; }
+#painel::-webkit-scrollbar-thumb:hover, #tip-cursos::-webkit-scrollbar-thumb:hover { background: #3B4E35; }
+
 .pular { position: fixed; left: 12px; top: -60px; z-index: 50; background: var(--terra); color: var(--osso); padding: 10px 14px; border-radius: 10px; }
 .pular:focus { top: 12px; }
 
@@ -107,6 +121,22 @@ button { font: inherit; color: inherit; }
 
 /* ---------- formulário de mensagem ---------- */
 .form-contato { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; }
+/* no cenário: cartão de papel osso preso na paisagem (tamanhos em unidades do mundo) */
+.rot-form { pointer-events: auto; }
+.form-final { width: 100%; margin: 0; gap: 10px; text-align: left; background: var(--osso); border: 5px solid var(--branco); border-radius: 18px; padding: 16px 20px 14px; box-shadow: 0 10px 0 rgba(46, 29, 20, .28); }
+.form-final h2 { margin: 0; font-size: 34px; line-height: 1; font-weight: 900; }
+.form-final .painel-cat { font-size: 15px; }
+.form-final .form-intro { margin: 0; font-size: 19px; font-style: italic; line-height: 1.3; }
+.form-final label { font-size: 19px; }
+.form-final input, .form-final textarea { font-size: 20px; padding: 8px 12px; }   /* 20 unidades: no celular fica >= 16px e o iPhone não dá zoom */
+.form-final textarea { min-height: 0; }
+.form-final .cta { font-size: 22px; min-height: 52px; }
+.form-final .form-status { font-size: 17px; }
+.form-final.estreito { padding: 12px 16px 10px; gap: 7px; }
+.form-final.estreito h2 { font-size: 30px; }
+.form-final.estreito label { font-size: 18px; gap: 2px; }
+.form-final.estreito input, .form-final.estreito textarea { padding: 6px 10px; }
+.form-final.estreito .cta { min-height: 48px; }
 .form-contato label { display: flex; flex-direction: column; gap: 4px; font-weight: 800; font-size: 17px; }
 .form-contato label small { font-weight: 600; font-style: italic; opacity: .75; }
 .form-contato input, .form-contato textarea { font: inherit; font-size: 17px; font-weight: 400; color: var(--terra); background: var(--branco); border: 3px solid rgba(74, 47, 32, .25); border-radius: 12px; padding: 10px 12px; }

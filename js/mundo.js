@@ -186,12 +186,28 @@ export function construir(ctx) {
   const faixa = (f, r, ext = 0) => [lx(f, r.ini - ext, -300), lx(f, r.fim + ext, viewW + 300)];
 const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<svg data-reg="${reg}" `);
   const out = { longe: '', meio: '', chao: '', info: '', frente: '', nuvens: '', ceuInfo: '' };
-  const fimMundo = pos.final + viewW + 400;
+  // fim do caminho: livro + formulário. No desktop largo o formulário cabe ao lado do livro;
+  // senão o Eremita anda um pouco mais até a caixa de correio.
+  const fim = {};
+  fim.livroW = estreito ? Math.min(420, viewW - 40) : 700;
+  fim.livroX = pos.final + (estreito ? meio : 260);
+  fim.formW = estreito ? Math.min(420, viewW - 40) : 420;
+  if (estreito) {
+    fim.correio = pos.final + 560;
+    fim.formX = fim.correio + meio;
+  } else {
+    fim.formX = fim.livroX + fim.livroW / 2 + 40 + fim.formW / 2;
+    fim.correio = Math.max(pos.final, fim.formX + fim.formW / 2 + 40 - viewW + cs);
+  }
+  fim.caixaX = fim.formX + fim.formW / 2 - 60;
+  if (!contato.chave) fim.correio = pos.final;
+  const heroFim = fim.correio;
+  const fimMundo = Math.max(heroFim, fim.caixaX) + viewW + 400;
 
   // ---------- nuvens ----------
   {
     const r = rng(77); let s = '';
-    const x1 = lx(0.07, pos.final, viewW + 400);
+    const x1 = lx(0.07, heroFim, viewW + 400);
     for (let x = -200; x < x1; x += 260 + r() * 300) s += nuvem(x, 120 + r() * 220, 180 + r() * 160, (x | 0) + 3);
     out.nuvens = pedaco(-400, x1 + 400, s);
   }
@@ -206,7 +222,7 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
     [a, b] = faixa(f, R.vale, 900);
     out.longe += bioma(a, b, serra(a, b, 680, 260, ['#A9B796', '#93A37F'], 8, 300) + serra(a, b, 770, 150, ['#7F956B', '#6B8159'], 9, 230), 'vale');
     [a, b] = faixa(f, R.retorno, 900);
-    b = Math.max(b, lx(f, pos.final, viewW + 400));
+    b = Math.max(b, lx(f, heroFim, viewW + 400));
     out.longe += bioma(a, b, serra(a, b, 700, 200, ['#E0A95E', '#CF9550'], 10, 320) + serra(a, b, 770, 120, ['#C98F4E', '#B57D40'], 11, 240), 'retorno');
   }
 
@@ -241,7 +257,7 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
     s += cachoeira(lx(f, pos.sementes[2] - meio + 300, viewW * 0.5), 800, escCach);
     out.meio += bioma(a, b, s, 'vale');
     // Retorno: fileiras retas de café, agora com caminho aberto
-    [a, b] = faixa(f, R.retorno, 500); b = Math.max(b, lx(f, pos.final, viewW + 400));
+    [a, b] = faixa(f, R.retorno, 500); b = Math.max(b, lx(f, heroFim, viewW + 400));
     s = `<rect x="${a}" y="700" width="${b - a}" height="300" fill="#C98D4A"/>`;
     for (let fila = 0; fila < 3; fila++) for (let x = a; x < b; x += 80) s += usar(['cafe2', 'cafe1', 'cafe3'][(x / 80 | 0) % 3], x + fila * 30, 700 + fila * 45, 0.32 + fila * 0.1);
     out.meio += bioma(a, b, s, 'retorno');
@@ -308,7 +324,13 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
         if (it.ate) s += `<text x="${px}" y="${CHAO - 12}" text-anchor="middle" class="svg-texto" font-size="22" fill="${cor.carvao}">até ${it.ate}</text>`;
         if (it.tipo === 'formacao') s += pergaminho(px, CHAO - 150, 0.9);
         s += `<g class="obj-tempo" id="tempo-${i}"><g transform="translate(${ox} ${CHAO}) scale(${esc}) translate(${-ox} ${-CHAO})">${objeto(it.objeto, ox)}</g></g>`;
-        H(x - 20, grande ? CHAO - 470 : CHAO - 390, estreito ? 300 : 320,
+        // janelas em alturas diferentes, presas ao objeto por um fio pontilhado
+        const sobe = (estreito ? [0, 95, 40, 120, 20, 75] : [0, 175, 80, 210, 35, 140])[i % 6];
+        const topo = (grande ? CHAO - 470 : CHAO - 390) - sobe;
+        const altObj = { camera: 115, filme: 190, prancheta: 250, cristal: 190, livro: 110, provas: 180, escola: 320 * esc, pergaminho: 90 }[it.objeto] || 150;
+        s += `<path d="M${x - 20} ${topo + 118} Q${(x - 20 + ox) / 2} ${(topo + 118 + CHAO - altObj) / 2 + 30} ${ox} ${CHAO - altObj - 6}" stroke="${cor.terra}" stroke-width="3" stroke-dasharray="3 9" stroke-linecap="round" fill="none" opacity=".55"/>`;
+        s += `<circle cx="${ox}" cy="${CHAO - altObj - 6}" r="6" fill="${cor.dourado}" stroke="${cor.branco}" stroke-width="2"/>`;
+        H(x - 20, topo, estreito ? 300 : 320,
           `<button class="cartao-tempo ${it.tipo}" data-painel="tempo-${i}"><span class="tipo">${it.tipo === 'formacao' ? 'Formação' : 'Trabalho'}</span><strong>${it.titulo}</strong><span class="local">${it.local}</span><span class="mais" aria-hidden="true">+</span></button>`, 'rot-tempo');
       });
       s += bau(pos.bau);
@@ -347,7 +369,7 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
     if (reg.id === 'retorno') {
       s += placa(pos.placaRetorno, 250);
       H(pos.placaRetorno, CHAO - 300, 260, `<span class="tabua">De volta ao Cafezal</span>`, 'placa');
-      for (let x = reg.ini - 200; x < b; x += 300) if (x < pos.canteiro - 300 || x > pos.final + 500) s += usar(['cafe2', 'cafe1', 'cafe3'][Math.abs(x / 300 | 0) % 3], x, CHAO + 4, 0.95);
+      for (let x = reg.ini - 200; x < b; x += 300) if (x < pos.canteiro - 300 || x > fimMundo) s += usar(['cafe2', 'cafe1', 'cafe3'][Math.abs(x / 300 | 0) % 3], x, CHAO + 4, 0.95);
       // canteiro onde as sementes são plantadas
       const cx = pos.canteiro;
       s += `<rect x="${cx - 250}" y="${CHAO - 30}" width="500" height="40" rx="10" fill="${cor.terraEsc}" stroke="${cor.branco}" stroke-width="5"/>`;
@@ -363,15 +385,18 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
       s += `<polygon id="raio-luz" points="${pos.final - 40},${CHAO - 300} ${pos.final - 40},${CHAO - 280} ${cx + 260},${CHAO - 20} ${cx - 260},${CHAO - 20}" fill="${cor.amarelo}" opacity="0"/>`;
       // o livro
       const lw = estreito ? 104 : 240, ly = estreito ? 78 : 120;
-      const lxl = pos.final + (estreito ? viewW * 0.5 - cs : 260);
-      H(lxl, ly, estreito ? Math.min(420, viewW - 40) : 700,
+      H(fim.livroX, ly, fim.livroW,
         `<div class="final ${estreito ? 'final-estreito' : ''}">
           <img class="capa-livro" src="${livro.capa}" alt="Capa do livro O Curador de Sementes, de Carlos Tobo" style="width:${lw}px" loading="lazy">
           <div class="final-texto"><p class="frase-livro">${livro.frase}</p>
           ${livro.links.map((l) => `<a class="cta ${l.icone === 'insta' ? 'cta-insta' : ''}" href="${l.url}" target="_blank" rel="noopener"><svg viewBox="0 0 100 100" aria-hidden="true">${icone(l.icone)}</svg><span>${l.texto}<small>${l.sub}</small></span></a>`).join('')}
-          ${contato.chave ? '' : '<!-- botão de mensagem aparece quando houver chave em dados.js (contato.chave) -->'}
-          <button class="cta cta-msg" data-painel="contato" ${contato.chave ? '' : 'hidden'}><svg viewBox="0 0 100 100" aria-hidden="true">${icone('carta')}</svg><span>Mandar mensagem<small>direto para mim</small></span></button>
+          ${contato.chave && fim.correio > pos.final ? `<button class="cta cta-msg" data-correio><svg viewBox="0 0 100 100" aria-hidden="true">${icone('carta')}</svg><span>Mandar mensagem<small>${estreito ? 'logo ali, na caixa de correio' : 'no formulário ao lado'}</small></span></button>` : ''}
           </div></div>`, 'rot-final');
+      // caixa de correio e o formulário, direto no cenário (sem janela por cima)
+      if (contato.chave) {
+        s += caixaCorreio(fim.caixaX);
+        H(fim.formX, estreito ? 92 : 120, fim.formW, formulario(estreito), 'rot-form', 'id="correio"');
+      }
     }
     out.chao += pedaco(a, b, s);
   }
@@ -383,7 +408,7 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
     for (const reg of regioes) {
       let [a, b] = faixa(f, reg);
       if (reg.id === 'cafezal') a = Math.min(a, -viewW);
-      if (reg.id === 'retorno') b = Math.max(b, lx(f, pos.final, viewW + 400));
+      if (reg.id === 'retorno') b = Math.max(b, lx(f, heroFim, viewW + 400));
       let s = '';
       for (let x = a; x < b; x += 240 + r() * 380) {
         const k = r();
@@ -423,9 +448,37 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
     { x: pos.placaVale - 40, id: 'vale' },
     ...pos.sementes.map((x, i) => ({ x: x + 30, id: 'sem-' + i })),
     { x: pos.canteiro - meio, id: 'canteiro' },
-    { x: pos.final, id: 'final' }
+    { x: pos.final, id: 'final' },
+    ...(fim.correio > pos.final ? [{ x: fim.correio, id: 'correio' }] : [])
   ];
-  return { out, paradas, meio, heroMax: pos.final };
+  return { out, paradas, meio, heroMax: heroFim, correio: fim.correio };
+}
+
+// formulário de mensagem que fica no cenário final
+function formulario(estreito) {
+  return `<form class="form-contato form-final ${estreito ? 'estreito' : ''}" novalidate aria-labelledby="form-titulo">
+    <p class="painel-cat">Correio do Curador</p>
+    <h2 id="form-titulo">Mande uma mensagem</h2>
+    ${estreito ? '' : '<p class="form-intro">Uma dúvida, um convite, uma conversa sobre o livro ou um projeto: escreva que chega até mim.</p>'}
+    <label>Seu nome<input name="nome" autocomplete="name" required maxlength="80"></label>
+    <label>Seu e-mail <small>(para eu responder)</small><input name="email" type="email" autocomplete="email" required maxlength="120"></label>
+    <label>Mensagem<textarea name="mensagem" rows="${estreito ? 3 : 4}" required maxlength="3000"></textarea></label>
+    <input type="checkbox" name="botcheck" class="armadilha" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button class="cta" type="submit"><svg viewBox="0 0 100 100" aria-hidden="true">${icone('carta')}</svg><span>Enviar</span></button>
+    <p class="form-status" role="status" aria-live="polite"></p>
+  </form>`;
+}
+
+// caixa de correio de madeira, com a bandeirinha terracota
+function caixaCorreio(x) {
+  const b = CHAO;
+  return `<g id="caixa-correio"><rect x="${x - 7}" y="${b - 150}" width="14" height="150" fill="${cor.terra}" stroke="${cor.branco}" stroke-width="4"/>
+    <path d="M${x - 62} ${b - 150} V${b - 210} Q${x - 62} ${b - 250} ${x - 22} ${b - 250} H${x + 52} Q${x + 62} ${b - 250} ${x + 62} ${b - 210} V${b - 150}Z" fill="${cor.salviaEsc}" stroke="${cor.branco}" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M${x - 62} ${b - 210} Q${x - 62} ${b - 250} ${x - 22} ${b - 250} Q${x + 18} ${b - 250} ${x + 18} ${b - 210} V${b - 150} H${x - 62}Z" fill="#3B4E35"/>
+    <ellipse cx="${x - 22}" cy="${b - 190}" rx="22" ry="26" fill="${cor.terraEsc}"/>
+    <path d="M${x - 40} ${b - 196} l18 -10 l18 10 v18 h-36z" fill="${cor.osso}" stroke="${cor.terra}" stroke-width="2"/>
+    <g id="bandeira-correio"><rect x="${x + 50}" y="${b - 245}" width="8" height="70" fill="${cor.terra}"/><rect x="${x + 58}" y="${b - 245}" width="34" height="22" rx="3" fill="${cor.terracota}" stroke="${cor.branco}" stroke-width="3"/></g>
+    ${usar('capim', x - 40, b + 4, 0.9)}${usar('capim', x + 50, b + 4, 0.8)}</g>`;
 }
 
 // ---------- espiral do Cafezal Infinito (camada quase parada: f 0.04) ----------

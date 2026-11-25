@@ -2,6 +2,11 @@
 @font-face { font-family: 'Alegreya'; src: url('../fontes/Alegreya-Italic.ttf') format('truetype'); font-weight: 400 900; font-style: italic; font-display: swap; }
 :root { --terra: #4A2F20; --terracota: #A9432B; --osso: #F1E9DA; --salvia: #4F6647; }
 * { box-sizing: border-box; }
+html { scrollbar-color: var(--terracota) rgba(74, 47, 32, .1); }
+::-webkit-scrollbar { width: 14px; }
+::-webkit-scrollbar-track { background: rgba(74, 47, 32, .08); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: var(--terracota); border: 3px solid var(--osso); border-radius: 10px; min-height: 48px; }
+::-webkit-scrollbar-thumb:hover { background: var(--terra); }
 body { margin: 0; background: var(--osso); color: var(--terra); font-family: 'Alegreya', Georgia, serif; font-size: 19px; line-height: 1.5; }
 header, main { max-width: 760px; margin: 0 auto; padding: 0 20px; }
 header { padding-top: 24px; padding-bottom: 12px; border-bottom: 3px solid var(--terra); }

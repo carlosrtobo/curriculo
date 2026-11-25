@@ -53,7 +53,6 @@ async function iniciar() {
   $('#marca').innerHTML = monograma(cor.terra);
   $('#eremita-caixa').innerHTML = svgEremita();
   E.er = new Eremita($('#eremita-caixa'), reduzido);
-  montarMapa();
   if (matchMedia('(pointer: coarse)').matches) $('.dica-texto').textContent = 'deslize para caminhar';
   const bt = $('#btn-animacao');
   if (sistemaReduz || escolha) {
@@ -80,8 +79,8 @@ function montar(primeira) {
   E.viewW = w / E.s;
   const estreito = E.viewW < 900;
   E.cs = E.viewW * (estreito ? 0.27 : 0.3);
-  const { out, paradas, meio, heroMax } = construir({ viewW: E.viewW, cs: E.cs });
-  E.paradas = paradas; E.meio = meio; E.heroMax = heroMax;
+  const { out, paradas, meio, heroMax, correio } = construir({ viewW: E.viewW, cs: E.cs });
+  E.paradas = paradas; E.meio = meio; E.heroMax = heroMax; E.correio = correio;
   E.esp = construirEspiral(E.viewW);
 
   E.camadas = CAMADAS.map(([id, f, chave]) => {
@@ -102,6 +101,8 @@ function montar(primeira) {
 
   $('#rolagem').style.height = ((E.heroMax - HERO_MIN) * E.s * RITMO + innerHeight) + 'px';
   document.documentElement.style.setProperty('--s', E.s);
+  montarMapa();
+  if ($('#correio')) ligarFormulario($('#correio'));
 
   // estados reaplicados sem animação
   E.estados = {};
@@ -112,7 +113,7 @@ function montar(primeira) {
 const heroParaRolagem = (x) => (x - HERO_MIN) * E.s * RITMO;
 
 function montarMapa() {
-  const tot = pos.final - HERO_MIN;
+  const tot = E.heroMax - HERO_MIN;
   const alvos = [pos.inicio, pos.placaHab - 40, pos.placaTempo - 40, pos.placaVale - 40, pos.placaRetorno - 40];
   $('#mapa-pontos').innerHTML = regioes.map((r, i) => {
     const p = ((alvos[i] - HERO_MIN) / tot) * 100;
@@ -166,10 +167,18 @@ function ligarEventos() {
       if (p) irPara(p.x);
     }
   });
-  document.addEventListener('click', (e) => { const b = e.target.closest('[data-painel]'); if (b) abrirPainel(b.dataset.painel, b); });
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-painel]'); if (b) abrirPainel(b.dataset.painel, b);
+    // "Mandar mensagem": o Eremita anda até a caixa de correio e o cursor vai para o nome
+    if (e.target.closest('[data-correio]')) {
+      irPara(E.correio);
+      setTimeout(() => { const n = $('#correio input[name=nome]'); if (n) n.focus({ preventScroll: true }); }, reduzido ? 50 : 1400);
+    }
+  });
   // navegação por Tab: leva o Eremita até o item focado
   $('#c-info').addEventListener('focusin', (e) => {
     const it = e.target.closest('.item'); if (!it) return;
+    if (it.id === 'correio') { if (Math.abs(E.alvo - E.correio) > 20) irPara(E.correio); return; }
     const x = parseFloat(it.style.left) + parseFloat(it.style.width) / 2;
     irPara(x - E.meio);
   });
@@ -308,16 +317,18 @@ function gatilhos(v, dt) {
   mudar('bau', E.hero > pos.bau - E.meio - 160,
     () => {
       const d = reduzido ? 0 : 1;
-      gsap.to('#bau-tampa', { rotation: -28, svgOrigin: `${pos.bau - 98} ${CHAO - 100}`, duration: 0.6 * d, ease: 'back.out(2)' });
+      gsap.to('#bau-tampa', { rotation: -28, transformOrigin: '0% 100%', duration: 0.6 * d, ease: 'back.out(2)' });
       gsap.to('#bau-luz', { opacity: 0.6, duration: 0.4 * d });
-      gsap.fromTo('.insignia', { scale: 0, opacity: 0, svgOrigin: `${pos.bau} ${CHAO - 110}` }, { scale: 1, opacity: 1, duration: 0.7 * d, stagger: 0.08 * d, ease: 'back.out(1.7)', delay: 0.2 * d });
+      // cada insígnia cresce a partir do próprio centro; no fim a transformação é limpa para o ícone
+      // ficar exatamente sob a área de hover (o svgOrigin do GSAP deixava um deslocamento)
+      gsap.fromTo('.insignia', { scale: 0, opacity: 0, transformOrigin: '50% 50%' }, { scale: 1, opacity: 1, duration: 0.7 * d, stagger: 0.08 * d, ease: 'back.out(1.7)', delay: 0.2 * d, clearProps: 'transform' });
       gsap.to('.rot-bau-titulo', { opacity: 1, duration: 0.4 * d, delay: 0.5 * d });
       gsap.set('.rot-insignia', { visibility: 'visible' });
     },
     () => {
-      gsap.set('#bau-tampa', { rotation: 0, svgOrigin: `${pos.bau - 98} ${CHAO - 100}` });
+      gsap.set('#bau-tampa', { clearProps: 'transform' });
       gsap.set('#bau-luz', { opacity: 0 });
-      gsap.set('.insignia', { scale: 0, opacity: 0 });
+      gsap.set('.insignia', { scale: 0, opacity: 0, transformOrigin: '50% 50%' });
       gsap.set('.rot-bau-titulo', { opacity: 0 });
       gsap.set('.rot-insignia', { visibility: 'hidden' });
       esconderDica();
@@ -333,7 +344,8 @@ function gatilhos(v, dt) {
       const n = E.coletadas.size; $('#plantadas').textContent = n;
       const mudas = $$('.muda').slice(0, n);
       gsap.fromTo(mudas, { scaleY: 0, transformOrigin: '50% 100%' }, { scaleY: 1, duration: reduzido ? 0 : 0.7, stagger: reduzido ? 0 : 0.15, ease: 'back.out(2)' });
-      gsap.set($$('.muda').slice(n), { scaleY: 0, transformOrigin: '50% 100%' });
+      const vazias = $$('.muda').slice(n);
+      if (vazias.length) gsap.set(vazias, { scaleY: 0, transformOrigin: '50% 100%' });
     },
     () => gsap.set('.muda', { scaleY: 0, transformOrigin: '50% 100%' }));
 
@@ -361,7 +373,7 @@ function aplicarColeta(i, animar, esconder) {
   }
   fruto.inert = false;
   if (!animar) { gsap.set(broto, { scaleY: 1, transformOrigin: '50% 100%' }); gsap.set(fruto, { scale: 1, opacity: 1 }); gsap.set(sem, { opacity: 0 }); return; }
-  gsap.to(sem, { scale: 0, opacity: 0, svgOrigin: `${pos.sementes[i]} ${CHAO}`, duration: 0.3 });
+  gsap.to(sem, { scale: 0, opacity: 0, transformOrigin: '50% 100%', duration: 0.3 });
   gsap.fromTo(broto, { scaleY: 0, transformOrigin: '50% 100%' }, { scaleY: 1, duration: 0.9, ease: 'back.out(1.4)', delay: 0.15 });
   gsap.fromTo(fruto, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: 'back.out(2.2)', delay: 0.7 });
 }
@@ -532,11 +544,9 @@ function abrirPainel(chave, origem) {
   if (chave.startsWith('proj-')) c.innerHTML = painelProjeto(projetos[+chave.slice(5)]);
   else if (chave.startsWith('tempo-')) c.innerHTML = painelTempo(linhaDoTempo[+chave.slice(6)]);
   else if (chave === 'bau') c.innerHTML = painelBau(origem && origem.dataset.area);
-  else if (chave === 'contato') c.innerHTML = painelContato();
   esconderDica();
   if (d.open) d.close();
   d.showModal();
-  if (chave === 'contato') ligarFormulario(c);
   if (chave.startsWith('proj-')) iniciarCarrossel(c);
   document.documentElement.classList.add('com-painel');
   // a entrada é animada no CSS: animar o <dialog> com GSAP tira o painel da camada modal
@@ -563,18 +573,6 @@ function painelProjeto(p) {
     <p class="painel-texto">${p.texto}</p>
     ${p.link ? `<a class="cta" href="${p.link}" target="_blank" rel="noopener"><svg viewBox="0 0 100 100" aria-hidden="true">${icone('seta')}</svg><span>${p.linkTexto}</span></a>` : ''}`;
 }
-function painelContato() {
-  return `<p class="painel-cat">Correio do Curador</p><h2 id="painel-titulo">Mande uma mensagem</h2>
-    <p class="painel-texto">Uma dúvida, um convite, uma conversa sobre o livro ou sobre um projeto: escreva aqui que a mensagem chega até mim.</p>
-    <form class="form-contato" novalidate>
-      <label>Seu nome<input name="nome" autocomplete="name" required maxlength="80"></label>
-      <label>Seu e-mail <small>(para eu responder)</small><input name="email" type="email" autocomplete="email" required maxlength="120"></label>
-      <label>Mensagem<textarea name="mensagem" rows="5" required maxlength="3000"></textarea></label>
-      <input type="checkbox" name="botcheck" class="armadilha" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <button class="cta" type="submit"><svg viewBox="0 0 100 100" aria-hidden="true">${icone('carta')}</svg><span>Enviar</span></button>
-      <p class="form-status" role="status" aria-live="polite"></p>
-    </form>`;
-}
 function ligarFormulario(raiz) {
   const f = $('form', raiz), status = $('.form-status', raiz), botao = $('button[type=submit]', f);
   f.addEventListener('submit', async (e) => {
@@ -599,13 +597,12 @@ function ligarFormulario(raiz) {
       f.reset();
       status.textContent = 'Mensagem enviada! Obrigado. Vou responder no e-mail que você deixou.';
       status.classList.add('ok');
-      if (!reduzido) faiscas(E.cs, CHAO - 330, 20);
+      if (!reduzido) { faiscas(E.cs, CHAO - 330, 20); gsap.fromTo('#bandeira-correio', { rotation: 0 }, { rotation: -90, transformOrigin: '0% 0%', duration: 0.5, ease: 'back.out(2)', yoyo: true, repeat: 1, repeatDelay: 1.5 }); }
     } catch (err) {
       status.textContent = 'Não consegui enviar agora. Confira a sua conexão e tente de novo daqui a pouco.';
       status.classList.add('erro');
     } finally { botao.disabled = false; }
   });
-  setTimeout(() => f.nome.focus(), 50);
 }
 function painelTempo(it) {
   return `<p class="painel-cat">${it.tipo === 'formacao' ? 'Formação' : 'Trabalho'} · ${it.ano}${it.ate ? '–' + it.ate : ''}</p><h2 id="painel-titulo">${it.titulo}</h2><p class="painel-local">${it.local}</p>
