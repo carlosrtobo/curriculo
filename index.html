@@ -39,7 +39,12 @@
       <span><b id="cont-n">0</b>/6</span>
     </div>
     <button id="btn-animacao" hidden>Ligar animações</button>
-    <a id="btn-texto" href="texto.html">Ver em texto</a>
+    <nav id="menu-grao" aria-label="Seções do caminho">
+      <button id="grao-btn" aria-expanded="false" aria-controls="grao-lista" aria-label="Abrir menu de seções">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><g transform="rotate(-28 50 50)"><ellipse cx="50" cy="50" rx="30" ry="40" fill="#6B3F26" stroke="#FFFDF8" stroke-width="6"/><ellipse cx="42" cy="38" rx="9" ry="14" fill="#fff" opacity=".16"/><path d="M50 12 C38 30 62 46 50 58 C40 68 56 80 50 88" fill="none" stroke="#3A2217" stroke-width="6" stroke-linecap="round"/></g></svg>
+      </button>
+      <ul id="grao-lista"></ul>
+    </nav>
   </div>
 </header>
 
@@ -49,14 +54,6 @@
   <span class="dica-mouse"><span></span></span>
   <span class="dica-texto">role para caminhar</span>
 </div>
-
-<nav id="mapa" aria-label="Regiões do caminho">
-  <div class="trilho">
-    <svg class="mapa-linha" viewBox="0 0 519 94" preserveAspectRatio="none" aria-hidden="true"><use href="#glifo"/></svg>
-    <div id="mapa-pontos"></div>
-    <span id="mapa-eremita" aria-hidden="true"></span>
-  </div>
-</nav>
 
 <div id="rolagem"></div>
 

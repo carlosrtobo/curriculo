@@ -1,6 +1,6 @@
 // Monta o mundo: camadas de parallax (longe → frente) e os objetos do currículo.
 // Tudo em "unidades": a tela tem 1000 de altura; o chão fica em y = 830.
-import { cor, rng, pedra, icone } from './arte.js';
+import { cor, rng, pedra, icone, xicara } from './arte.js';
 import { regioes, habilidades, linhaDoTempo, projetos, resumoCursos, livro, contato } from './dados.js';
 
 export const CHAO = 830;
@@ -392,6 +392,9 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
           ${livro.links.map((l) => `<a class="cta ${l.icone === 'insta' ? 'cta-insta' : ''}" href="${l.url}" target="_blank" rel="noopener"><svg viewBox="0 0 100 100" aria-hidden="true">${icone(l.icone)}</svg><span>${l.texto}<small>${l.sub}</small></span></a>`).join('')}
           ${contato.chave && fim.correio > pos.final ? `<button class="cta cta-msg" data-correio><svg viewBox="0 0 100 100" aria-hidden="true">${icone('carta')}</svg><span>Mandar mensagem<small>${estreito ? 'logo ali, na caixa de correio' : 'no formulário ao lado'}</small></span></button>` : ''}
           </div></div>`, 'rot-final');
+      // xícara de café: volta ao começo do caminho
+      const xx = estreito ? heroFim + viewW * 0.56 - cs : fim.livroX + fim.livroW / 2 - 70;
+      H(xx, CHAO - 168, 150, `<button class="xicara" data-ir="${pos.inicio}" aria-label="Voltar ao início do caminho">${xicara()}<span>voltar ao início</span></button>`, 'rot-xicara');
       // caixa de correio e o formulário, direto no cenário (sem janela por cima)
       if (contato.chave) {
         s += caixaCorreio(fim.caixaX);

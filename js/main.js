@@ -1,5 +1,5 @@
 // Motor do currículo: a rolagem vertical move o Eremita pelo mundo na horizontal.
-import { defs, monograma, icone, cor } from './arte.js';
+import { defs, monograma, icone, cor, grao } from './arte.js';
 import { construir, construirEspiral, pos, CHAO } from './mundo.js';
 import { regioes, projetos, linhaDoTempo, cursos, resumoCursos, areas, contato } from './dados.js';
 import { svgEremita, Eremita } from './eremita.js';
@@ -74,6 +74,7 @@ async function iniciar() {
 
 function montar(primeira) {
   const h = innerHeight, w = innerWidth;
+  if (w < 50 || h < 50) return;                  // janela oculta ou minimizada: espera um tamanho de verdade
   E.s = Math.max(h / 1000, w / 2100);
   E.offY = h - 1000 * E.s;                       // em telas muito largas e baixas corta o alto do céu
   E.viewW = w / E.s;
@@ -101,7 +102,8 @@ function montar(primeira) {
 
   $('#rolagem').style.height = ((E.heroMax - HERO_MIN) * E.s * RITMO + innerHeight) + 'px';
   document.documentElement.style.setProperty('--s', E.s);
-  montarMapa();
+  montarMenu();
+  E.regiao = -1;                                 // remarca a seção atual no menu
   if ($('#correio')) ligarFormulario($('#correio'));
 
   // estados reaplicados sem animação
@@ -112,13 +114,35 @@ function montar(primeira) {
 
 const heroParaRolagem = (x) => (x - HERO_MIN) * E.s * RITMO;
 
-function montarMapa() {
-  const tot = E.heroMax - HERO_MIN;
-  const alvos = [pos.inicio, pos.placaHab - 40, pos.placaTempo - 40, pos.placaVale - 40, pos.placaRetorno - 40];
-  $('#mapa-pontos').innerHTML = regioes.map((r, i) => {
-    const p = ((alvos[i] - HERO_MIN) / tot) * 100;
-    return `<button class="ponto" style="left:${p}%" data-ir="${alvos[i]}" aria-label="Ir para ${r.nome}"><span class="bolinha"></span><span class="nome-ponto">${r.curto}</span></button>`;
-  }).join('');
+// menu flutuante: um grão de café que abre outros grãos, um para cada seção
+function montarMenu() {
+  const itens = [
+    ['Início · Cafezal', pos.inicio, 0],
+    ['Habilidades', pos.placaHab - 40, 1],
+    ['Formação e experiência', pos.placaTempo - 40, 2],
+    ['Baú de cursos', (E.paradas.find((p) => p.id === 'bau') || {}).x, 2],
+    ['Projetos', pos.placaVale - 40, 3],
+    ['O livro', pos.final, 4]
+  ];
+  const tons = ['#7A4A2C', '#6B3F26', '#8A5A3A', '#5C3520', '#7A4A2C', '#6B3F26', '#8A5A3A', '#5C3520'];
+  let html = itens.map(([nome, x, reg], i) => `<li style="--i:${i}"><button data-reg="${reg}" data-ir="${Math.round(x)}"><span class="grao-nome">${nome}</span><span class="grao-mini">${grao(tons[i])}</span></button></li>`).join('');
+  if ($('#correio')) html += `<li style="--i:${itens.length}"><button data-correio><span class="grao-nome">Mandar mensagem</span><span class="grao-mini">${grao(cor.salviaEsc, '#2C3B27')}</span></button></li>`;
+  html += `<li style="--i:${itens.length + 1}"><a href="texto.html"><span class="grao-nome">Versão em texto</span><span class="grao-mini">${grao(cor.terra)}</span></a></li>`;
+  $('#grao-lista').innerHTML = html;
+}
+function abrirMenu(porMouse) {
+  const m = $('#menu-grao');
+  if (m.classList.contains('aberto')) return;
+  m.classList.add('aberto');
+  $('#grao-btn').setAttribute('aria-expanded', 'true');
+  $('#grao-btn').setAttribute('aria-label', 'Fechar menu de seções');
+}
+function fecharMenu() {
+  const m = $('#menu-grao');
+  if (!m.classList.contains('aberto')) return;
+  m.classList.remove('aberto');
+  $('#grao-btn').setAttribute('aria-expanded', 'false');
+  $('#grao-btn').setAttribute('aria-label', 'Abrir menu de seções');
 }
 
 function montarBorboletas() {
@@ -156,7 +180,21 @@ function irPara(x) {
 function ligarEventos() {
   let t;
   addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => montar(false), 200); });
-  $('#mapa').addEventListener('click', (e) => { const b = e.target.closest('[data-ir]'); if (b) irPara(+b.dataset.ir); });
+  // qualquer botão com data-ir leva o Eremita até lá (menu de grãos, xícara)
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-ir]'); if (!b) return;
+    irPara(+b.dataset.ir);
+    if (b.closest('#menu-grao')) fecharMenu();
+  });
+  // menu de grãos: abre ao passar o mouse (CSS) e também ao clicar/tocar e pelo teclado
+  const menu = $('#menu-grao'), gbtn = $('#grao-btn');
+  gbtn.addEventListener('click', () => (menu.classList.contains('aberto') ? fecharMenu() : abrirMenu()));
+  menu.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') abrirMenu(true); });
+  menu.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') fecharMenu(); });
+  menu.addEventListener('keydown', (e) => { if (e.key === 'Escape') { fecharMenu(); gbtn.focus(); } });
+  menu.addEventListener('focusout', (e) => { if (!menu.contains(e.relatedTarget)) fecharMenu(); });
+  document.addEventListener('pointerdown', (e) => { if (!menu.contains(e.target)) fecharMenu(); });
+  menu.addEventListener('click', (e) => { if (e.target.closest('[data-correio], a')) fecharMenu(); });
   $('#marca').addEventListener('click', (e) => { e.preventDefault(); irPara(HERO_MIN); });
   addEventListener('keydown', (e) => {
     if ($('#painel').open) return;
@@ -176,8 +214,18 @@ function ligarEventos() {
     }
   });
   // navegação por Tab: leva o Eremita até o item focado
+  // só para quem navega pelo teclado (Tab): clique com mouse ou toque não move o Eremita,
+  // e um item que já está inteiro na tela também não
+  // o navegador rola o palco sozinho para mostrar um item focado: o palco nunca rola, quem anda é o Eremita
+  const palco = $('#palco');
+  palco.addEventListener('scroll', () => { palco.scrollLeft = 0; palco.scrollTop = 0; });
   $('#c-info').addEventListener('focusin', (e) => {
+    palco.scrollLeft = 0; palco.scrollTop = 0;
     const it = e.target.closest('.item'); if (!it) return;
+    if (!e.target.matches(':focus-visible') || $('#painel').open) return;
+    // visível? decide pela posição no mundo (unidades), não pela tela
+    const ix0 = parseFloat(it.style.left), ix1 = ix0 + parseFloat(it.style.width);
+    if (ix0 >= E.camX + 20 && ix1 <= E.camX + E.viewW - 20) return;
     if (it.id === 'correio') { if (Math.abs(E.alvo - E.correio) > 20) irPara(E.correio); return; }
     const x = parseFloat(it.style.left) + parseFloat(it.style.width) / 2;
     irPara(x - E.meio);
@@ -196,8 +244,11 @@ function ligarEventos() {
 // ------------------------------------------------------------------ quadro a quadro
 let tAnt = performance.now();
 function quadro(t) {
-  const dt = Math.min(0.05, (t - tAnt) / 1000); tAnt = t;
-  E.alvo = Math.max(HERO_MIN, Math.min(E.heroMax, HERO_MIN + scrollY / (E.s * RITMO)));
+  const dt = Math.max(0, Math.min(0.05, (t - tAnt) / 1000)) || 0; tAnt = t;
+  if (!E.esp) { requestAnimationFrame(quadro); return; }   // o mundo ainda não foi montado (janela sem tamanho)
+  const alvo = Math.max(HERO_MIN, Math.min(E.heroMax, HERO_MIN + scrollY / (E.s * RITMO)));
+  if (Number.isFinite(alvo)) E.alvo = alvo;
+  if (!Number.isFinite(E.hero)) E.hero = E.alvo;   // nunca deixa a posição virar NaN
   const antes = E.hero;
   if (reduzido) E.hero = E.alvo;
   else { E.hero += (E.alvo - E.hero) * Math.min(1, dt * 7); if (Math.abs(E.alvo - E.hero) < 0.08) E.hero = E.alvo; }
@@ -234,7 +285,6 @@ function quadro(t) {
   atualizarParticulas(dt, v, fuga);
   if (E.hero > 2000 && E.hero < 15000 && !reduzido) atualizarBorboletas(t / 1000);
 
-  $('#mapa-eremita').style.left = ((E.hero - HERO_MIN) / (E.heroMax - HERO_MIN) * 100) + '%';
   if (scrollY > 40) document.documentElement.classList.add('rolou');
   requestAnimationFrame(quadro);
 }
@@ -417,8 +467,8 @@ function atualizarRegiao() {
   if (idx === E.regiao) return;
   const primeira = E.regiao === -1;
   E.regiao = idx;
-  $$('#mapa-pontos .ponto').forEach((b, k) => b.classList.toggle('atual', k === idx));
   document.documentElement.dataset.regiao = regioes[idx].id;
+  $$('#grao-lista [data-reg]').forEach((b) => b.classList.toggle('atual', +b.dataset.reg === idx));
   if (primeira) return;
   const placa = $('#placa-fase');
   $('#placa-fase small').textContent = `Fase ${idx + 1}`;
@@ -554,7 +604,7 @@ function abrirPainel(chave, origem) {
 }
 function fecharPainel() {
   $('#painel').close();
-  if (painelOrigem) painelOrigem.focus({ preventScroll: true });
+  if (painelOrigem) painelOrigem.focus({ preventScroll: true, focusVisible: false });
 }
 
 function painelProjeto(p) {

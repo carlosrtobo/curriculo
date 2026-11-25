@@ -126,6 +126,29 @@ export function icone(nome, c = cor.branco) {
   }
 }
 
+// Grão de café (menu flutuante): oval marrom com o sulco em S
+export function grao(fundo = '#6B3F26', sulco = '#3A2217') {
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><g transform="rotate(-28 50 50)">
+    <ellipse cx="50" cy="50" rx="30" ry="40" fill="${fundo}" stroke="${cor.branco}" stroke-width="6"/>
+    <ellipse cx="42" cy="38" rx="9" ry="14" fill="#fff" opacity=".16"/>
+    <path d="M50 12 C38 30 62 46 50 58 C40 68 56 80 50 88" fill="none" stroke="${sulco}" stroke-width="6" stroke-linecap="round"/></g></svg>`;
+}
+
+// Xícara de café com vapor (botão "voltar ao início")
+export function xicara() {
+  return `<svg viewBox="0 0 140 150" aria-hidden="true">
+    <g class="vapor" fill="none" stroke="${cor.branco}" stroke-width="5" stroke-linecap="round" opacity=".9">
+      <path d="M48 52 C40 40 56 32 48 18"/><path d="M68 50 C60 36 78 28 68 10"/><path d="M88 52 C80 40 96 32 88 18"/></g>
+    <ellipse cx="70" cy="138" rx="62" ry="10" fill="${cor.osso}" stroke="${cor.branco}" stroke-width="4"/>
+    <path d="M110 82 C138 80 138 116 106 114" fill="none" stroke="${cor.branco}" stroke-width="18"/>
+    <path d="M110 82 C138 80 138 116 106 114" fill="none" stroke="${cor.terracota}" stroke-width="9"/>
+    <path d="M24 64 H116 L108 120 Q106 132 92 132 H48 Q34 132 32 120Z" fill="${cor.terracota}" stroke="${cor.branco}" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M30 86 H112" stroke="${cor.osso}" stroke-width="7"/>
+    <ellipse cx="70" cy="64" rx="46" ry="9" fill="#4A2A1A" stroke="${cor.branco}" stroke-width="5"/>
+    <path d="M52 104 l18 -10 l18 10" fill="none" stroke="${cor.osso}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
 // Monograma CT (sem a palavra "visto")
 export function monograma(c = cor.terra) {
   return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="45" fill="none" stroke="${c}" stroke-width="4"/>` +

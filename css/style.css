@@ -149,7 +149,7 @@ html { scrollbar-color: var(--terracota) rgba(241, 233, 218, .6); }            /
 .form-status.ok { color: var(--salvia-esc); }
 .form-status.erro { color: #A9432B; }
 
-.item button:focus-visible, .item a:focus-visible, #hud a:focus-visible, #mapa button:focus-visible { outline: 4px solid var(--roxo); outline-offset: 4px; }
+.item button:focus-visible, .item a:focus-visible, #hud a:focus-visible { outline: 4px solid var(--roxo); outline-offset: 4px; }
 
 /* ---------- HUD (em pixels reais) ---------- */
 #hud { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: max(10px, env(safe-area-inset-top)) 16px 10px; pointer-events: none; }
@@ -167,11 +167,47 @@ html { scrollbar-color: var(--terracota) rgba(241, 233, 218, .6); }            /
 #btn-animacao[hidden] { display: none; }
 @media (max-width: 560px) { #btn-animacao { font-size: 12px; padding: 7px 9px; } }
 
+/* ---------- menu de grãos de café ---------- */
+#menu-grao { position: relative; }
+#grao-btn { width: 54px; height: 54px; padding: 0; border: 0; border-radius: 50%; background: var(--osso); box-shadow: 0 0 0 3px var(--branco), 0 4px 0 3px rgba(46, 29, 20, .25); cursor: pointer; display: grid; place-items: center; transition: transform .3s; }
+#grao-btn svg { width: 46px; height: 46px; transition: transform .45s cubic-bezier(.3, 1.6, .5, 1); }
+#menu-grao.aberto #grao-btn svg { transform: rotate(160deg) scale(1.08); }
+#grao-btn:focus-visible { outline: 4px solid var(--roxo); outline-offset: 4px; }
+#grao-lista { position: absolute; right: 0; top: 62px; margin: 0; padding: 4px 0 0; list-style: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: none; }
+#menu-grao.aberto #grao-lista { pointer-events: auto; }
+#grao-lista li { opacity: 0; transform: translateY(-26px) rotate(-40deg) scale(.4); transform-origin: right center; transition: opacity .2s, transform .35s cubic-bezier(.3, 1.5, .5, 1); transition-delay: calc(var(--i) * 35ms); }
+#menu-grao.aberto #grao-lista li { opacity: 1; transform: none; }
+#grao-lista button, #grao-lista a { display: flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; cursor: pointer; text-decoration: none; color: var(--terra); font: inherit; }
+.grao-nome { background: var(--osso); border: 3px solid var(--branco); border-radius: 20px; padding: 4px 12px; font-weight: 800; font-size: 15px; white-space: nowrap; box-shadow: 0 3px 0 rgba(46, 29, 20, .22); transition: background .15s; }
+.grao-mini { width: 40px; height: 40px; display: grid; place-items: center; transition: transform .2s; }
+.grao-mini svg { width: 40px; height: 40px; }
+#grao-lista .atual .grao-nome { background: var(--terracota); color: var(--branco); }
+#grao-lista button:hover .grao-nome, #grao-lista a:hover .grao-nome, #grao-lista button:focus-visible .grao-nome, #grao-lista a:focus-visible .grao-nome { background: var(--amarelo); }
+#grao-lista button:hover .grao-mini, #grao-lista a:hover .grao-mini, #grao-lista :focus-visible .grao-mini { transform: rotate(25deg) scale(1.15); }
+#grao-lista :focus-visible { outline: none; }
+#grao-lista :focus-visible .grao-nome { outline: 3px solid var(--roxo); outline-offset: 2px; }
+.reduzido #grao-lista li, .reduzido #grao-btn svg { transition: opacity .15s; }
+
+/* ---------- xícara de café: volta ao início ---------- */
+.rot-xicara { gap: 0; }
+.xicara { width: 150px; padding: 0; border: 0; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--terra); font: inherit; }
+.xicara svg { width: 120px; height: 128px; transition: transform .25s; transform-origin: 50% 100%; }
+.xicara span { background: var(--osso); border: 3px solid var(--branco); border-radius: 16px; padding: 2px 12px; font-size: 18px; font-weight: 800; box-shadow: 0 4px 0 rgba(46, 29, 20, .22); white-space: nowrap; }
+.xicara:hover svg, .xicara:focus-visible svg { transform: rotate(-8deg) scale(1.06); }
+.xicara:hover span, .xicara:focus-visible span { background: var(--amarelo); }
+.xicara:focus-visible { outline: none; }
+.xicara:focus-visible span { outline: 3px solid var(--roxo); outline-offset: 2px; }
+.vapor path { animation: vapor 2.4s ease-in-out infinite; }
+.vapor path:nth-child(2) { animation-delay: .5s; }
+.vapor path:nth-child(3) { animation-delay: 1s; }
+@keyframes vapor { 0% { opacity: 0; transform: translateY(8px); } 40% { opacity: .9; } 100% { opacity: 0; transform: translateY(-10px); } }
+.reduzido .vapor path { animation: none; }
+
 #placa-fase { position: fixed; z-index: 9; top: 72px; left: 50%; translate: -50% 0; background: var(--osso); border: 4px solid var(--branco); border-radius: 14px; padding: 8px 22px; text-align: center; box-shadow: var(--sombra); opacity: 0; pointer-events: none; display: flex; flex-direction: column; }
 #placa-fase small { font-size: 14px; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: var(--terracota); }
 #placa-fase strong { font-size: 24px; font-weight: 900; white-space: nowrap; }
 
-#dica { position: fixed; z-index: 9; left: 50%; bottom: 92px; translate: -50% 0; display: flex; align-items: center; gap: 10px; background: rgba(241, 233, 218, .92); border: 3px solid var(--branco); border-radius: 30px; padding: 8px 16px; font-weight: 700; font-size: 17px; transition: opacity .5s; }
+#dica { position: fixed; z-index: 9; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); translate: -50% 0; display: flex; align-items: center; gap: 10px; background: rgba(241, 233, 218, .92); border: 3px solid var(--branco); border-radius: 30px; padding: 8px 16px; font-weight: 700; font-size: 17px; transition: opacity .5s; }
 .rolou #dica { opacity: 0; pointer-events: none; }
 .dica-mouse { width: 22px; height: 34px; border: 3px solid var(--terra); border-radius: 12px; position: relative; }
 .dica-mouse span { position: absolute; left: 50%; top: 5px; width: 4px; height: 8px; margin-left: -2px; background: var(--terracota); border-radius: 2px; animation: roda 1.4s ease-in-out infinite; }
@@ -183,15 +219,6 @@ html { scrollbar-color: var(--terracota) rgba(241, 233, 218, .6); }            /
 }
 @keyframes dedo { 50% { transform: translateY(-10px); } }
 
-#mapa { position: fixed; z-index: 10; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); translate: -50% 0; width: min(600px, calc(100vw - 24px)); height: 58px; background: rgba(241, 233, 218, .9); border: 3px solid var(--branco); border-radius: 20px; box-shadow: 0 4px 0 rgba(46, 29, 20, .22); }
-#mapa .trilho { position: absolute; left: 36px; right: 36px; top: 6px; bottom: 0; }
-.mapa-linha { position: absolute; left: 0; right: 0; top: 4px; width: 100%; height: 18px; color: var(--terra); }
-#mapa-pontos { position: absolute; inset: 0; }
-.ponto { position: absolute; top: 0; translate: -50% 0; background: none; border: 0; padding: 4px 2px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 44px; }
-.bolinha { width: 16px; height: 16px; border-radius: 50%; background: var(--osso); border: 3px solid var(--terra); }
-.ponto.atual .bolinha { background: var(--terracota); border-color: var(--branco); box-shadow: 0 0 0 3px var(--terracota); }
-.nome-ponto { font-size: 13px; font-weight: 800; background: rgba(241, 233, 218, .85); padding: 0 6px; border-radius: 8px; }
-#mapa-eremita { position: absolute; top: 3px; width: 14px; height: 20px; margin-left: -7px; background: var(--dourado); border: 2px solid var(--branco); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; pointer-events: none; box-shadow: 0 0 10px var(--dourado); }
 
 /* ---------- painel ---------- */
 dialog#painel { width: min(760px, 94vw); max-height: 88vh; padding: 26px 24px 28px; border: 6px solid var(--branco); border-radius: 20px; background: var(--osso); color: var(--terra); box-shadow: 0 14px 0 rgba(46, 29, 20, .35); overflow: auto; }
@@ -277,7 +304,6 @@ dialog#painel[open] { animation: abre-painel .35s cubic-bezier(.2, .8, .3, 1); }
 .periodo ul { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 6px; font-size: 16px; }
 .periodo li { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .periodo li small { opacity: .7; font-style: italic; }
-.ponto-area { width: 11px; height: 11px; border-radius: 50%; flex: none; border: 2px solid var(--branco); transform: translateY(1px); }
 @media (max-width: 560px) {
   .barra { grid-template-columns: 1fr auto; }
   .barra-trilho { grid-column: 1 / -1; grid-row: 2; }
