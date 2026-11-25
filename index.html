@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carlos Tobo · A Travessia do Curador</title>
+<meta name="description" content="Currículo interativo de Carlos Tobo, comunicólogo, professor de design e linguagem e escritor. Role para atravessar o mundo de O Curador de Sementes.">
+<meta property="og:title" content="Carlos Tobo · A Travessia do Curador">
+<meta property="og:description" content="Entre a palavra e o design, planto histórias, ensino caminhos e desenho mundos.">
+<meta property="og:image" content="img/marca/livro-capa.png">
+<meta name="theme-color" content="#F2C27E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23F1E9DA' stroke='%234A2F20' stroke-width='5'/%3E%3Cpath d='M62 24 A16 16 0 1 0 62 46' fill='none' stroke='%234A2F20' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M24 56 L76 56 L70 64 L56 64 L56 90 M44 90 L44 64 L30 64 Z' fill='none' stroke='%234A2F20' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preload" href="fontes/Alegreya.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="pular" href="texto.html">Pular para a versão em texto do currículo</a>
+<div id="defs"></div>
+
+<div id="palco">
+  <div class="camada" id="c-nuvens" aria-hidden="true"></div>
+  <div class="camada" id="c-espiral" aria-hidden="true"></div>
+  <div class="camada" id="c-longe" aria-hidden="true"></div>
+  <div class="camada" id="c-ceu-info"></div>
+  <div class="camada" id="c-meio" aria-hidden="true"></div>
+  <div class="camada" id="c-borboletas" aria-hidden="true"></div>
+  <div class="camada" id="c-chao" aria-hidden="true"></div>
+  <div class="camada" id="c-info"></div>
+  <div id="eremita-caixa" role="img" aria-label="O Eremita: Carlos de capa, barba, óculos e cajado com uma semente que brilha"></div>
+  <svg id="particulas" aria-hidden="true" preserveAspectRatio="xMinYMin meet"></svg>
+  <div class="camada" id="c-frente" aria-hidden="true"></div>
+</div>
+
+<header id="hud">
+  <a href="#" id="marca" aria-label="Voltar ao início do caminho"></a>
+  <div class="hud-dir">
+    <div id="contador" role="status" aria-label="Sementes colhidas: 0 de 6">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 10 C76 28 80 66 50 90 C20 66 24 28 50 10Z" fill="#E8B54A" stroke="#fff" stroke-width="6"/></svg>
+      <span><b id="cont-n">0</b>/6</span>
+    </div>
+    <button id="btn-animacao" hidden>Ligar animações</button>
+    <a id="btn-texto" href="texto.html">Ver em texto</a>
+  </div>
+</header>
+
+<div id="placa-fase" aria-hidden="true"><small>Fase 1</small><strong>Cafezal Infinito</strong></div>
+
+<div id="dica" aria-hidden="true">
+  <span class="dica-mouse"><span></span></span>
+  <span class="dica-texto">role para caminhar</span>
+</div>
+
+<nav id="mapa" aria-label="Regiões do caminho">
+  <div class="trilho">
+    <svg class="mapa-linha" viewBox="0 0 519 94" preserveAspectRatio="none" aria-hidden="true"><use href="#glifo"/></svg>
+    <div id="mapa-pontos"></div>
+    <span id="mapa-eremita" aria-hidden="true"></span>
+  </div>
+</nav>
+
+<div id="rolagem"></div>
+
+<dialog id="painel" aria-labelledby="painel-titulo">
+  <button class="fechar" aria-label="Fechar">×</button>
+  <div id="painel-conteudo"></div>
+</dialog>
+
+<noscript><p class="sem-js">Este currículo interativo precisa de JavaScript. <a href="texto.html">Veja a versão em texto</a>.</p></noscript>
+<script src="js/vendor/gsap.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
