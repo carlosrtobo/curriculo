@@ -12,8 +12,8 @@ export const pessoa = {
 export const regioes = [
   { id: 'cafezal', nome: 'Cafezal Infinito', curto: 'Cafezal', ini: 0, fim: 2600 },
   { id: 'fuga', nome: 'A Fuga do Cafezal', curto: 'Fuga', ini: 2600, fim: 6000 },
-  { id: 'piramide', nome: 'Caminho para a Pirâmide', curto: 'Pirâmide', ini: 6000, fim: 10700 },
-  { id: 'vale', nome: 'Vale das Borboletas', curto: 'Vale', ini: 10700, fim: 15000 },
+  { id: 'piramide', nome: 'Caminho para a Pirâmide', curto: 'Pirâmide', ini: 6000, fim: 11000 },
+  { id: 'vale', nome: 'Vale das Borboletas', curto: 'Vale', ini: 11000, fim: 15000 },
   { id: 'retorno', nome: 'De volta ao Cafezal', curto: 'Retorno', ini: 15000, fim: 17400 }
 ];
 
@@ -232,6 +232,15 @@ export const projetos = [
     texto: 'Uma forma de gamificar a gramática: serve para revisar com os alunos o que aprenderam e para apresentar conceitos de um jeito mais lúdico. Tem trilha de módulos, XP, selos colecionáveis, trilha bônus de figuras de linguagem, prática livre e um relatório que mostra o que o aluno domina, onde está "quase lá" e onde trava.'
   }
 ];
+
+// Formulário de mensagem. O GitHub Pages não envia e-mail sozinho:
+// as mensagens passam pelo Web3Forms (web3forms.com), que repassa para o e-mail do Carlos.
+// A chave de acesso pode ficar pública no código (ela só serve para enviar para esse e-mail).
+export const contato = {
+  servico: 'https://api.web3forms.com/submit',
+  chave: '',
+  assunto: 'Mensagem pelo currículo interativo'
+};
 
 export const livro = {
   titulo: 'O Curador de Sementes',

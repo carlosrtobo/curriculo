@@ -1,7 +1,7 @@
 // Monta o mundo: camadas de parallax (longe → frente) e os objetos do currículo.
 // Tudo em "unidades": a tela tem 1000 de altura; o chão fica em y = 830.
 import { cor, rng, pedra, icone } from './arte.js';
-import { regioes, habilidades, linhaDoTempo, projetos, resumoCursos, livro } from './dados.js';
+import { regioes, habilidades, linhaDoTempo, projetos, resumoCursos, livro, contato } from './dados.js';
 
 export const CHAO = 830;
 const f1 = (n) => Math.round(n * 10) / 10;
@@ -10,15 +10,14 @@ const R = Object.fromEntries(regioes.map((r) => [r.id, r]));
 // Posições fixas dos objetos no mundo (x do chão)
 export const pos = {
   inicio: 200,
-  voltas: [950, 1550, 2150],
   quebra: 2480,
   placaHab: 3000,
   habilidades: habilidades.map((_, i) => 3420 + i * 430),
   placaTempo: 6300,
   tempo: linhaDoTempo.map((_, i) => 6750 + i * 450),
-  bau: 10350,
-  placaVale: 11050,
-  sementes: projetos.map((_, i) => 11500 + i * 560),
+  bau: 10620,
+  placaVale: 11300,
+  sementes: projetos.map((_, i) => 11720 + i * 540),
   placaRetorno: 15250,
   canteiro: 15800,
   final: 16420
@@ -269,10 +268,6 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
 
     if (reg.id === 'cafezal') {
       for (let x = a; x < reg.fim + 200; x += 290) if (Math.abs(x - pos.inicio) > 140) s += usar(['cafe1', 'cafe3', 'cafe2'][Math.abs(x / 290 | 0) % 3], x, CHAO + 4, 0.95);
-      pos.voltas.forEach((x, i) => {
-        s += placa(x, 230);
-        H(x, CHAO - 270, 170, `<span class="tabua"><svg viewBox="0 0 100 100" class="ico">${icone('espiral', cor.terra)}</svg>${i + 1}ª volta</span>`, 'placa');
-      });
     }
     if (reg.id === 'fuga') {
       s += placa(pos.placaHab, 250);
@@ -326,6 +321,8 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
         s += `<g class="insignia" id="ins-${k}"><line x1="${pos.bau}" y1="${CHAO - 110}" x2="${f1(bx)}" y2="${f1(by)}" stroke="${cor.dourado}" stroke-width="3" stroke-dasharray="4 8" opacity=".7"/>
           <circle cx="${f1(bx)}" cy="${f1(by)}" r="40" fill="${ar.cor}" stroke="${cor.branco}" stroke-width="6"/><g transform="translate(${f1(bx - 21)} ${f1(by - 21)}) scale(.42)">${icone(ar.icone)}</g>
           <rect x="${f1(bx + 14)}" y="${f1(by + 16)}" width="${ar.n > 9 ? 50 : 40}" height="30" rx="15" fill="${cor.branco}"/><text x="${f1(bx + 14 + (ar.n > 9 ? 25 : 20))}" y="${f1(by + 38)}" text-anchor="middle" class="svg-texto" font-size="21" fill="${cor.carvao}">×${ar.n}</text></g>`;
+        // botão invisível sobre a insígnia: ao passar o mouse mostra os nomes dos cursos
+        H(bx, by - 46, 92, `<button class="insignia-btn" data-area="${ar.id}" data-painel="bau" aria-label="${ar.nome}: ${ar.n} cursos. Abrir a lista completa" aria-describedby="tip-cursos"></button>`, 'rot-insignia');
       });
       H(pos.bau, CHAO - 90, 200, `<button class="botao-bau" data-painel="bau" aria-label="Abrir o baú: ${total} cursos complementares"><span>${total} cursos</span></button>`, 'rot-bau');
       H(estreito ? pos.bau - 22 : pos.bau, estreito ? CHAO - 610 : CHAO - 560, estreito ? 280 : 320, `<strong class="titulo-bau">Baú de cursos</strong><span class="local">2001 a 2026 · toque no baú</span>`, 'rot-bau-titulo');
@@ -365,13 +362,15 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
       H(cx, CHAO - 260, 260, `<strong class="titulo-canteiro"><span id="plantadas">0</span> de 6 sementes plantadas</strong>`, 'rot-canteiro');
       s += `<polygon id="raio-luz" points="${pos.final - 40},${CHAO - 300} ${pos.final - 40},${CHAO - 280} ${cx + 260},${CHAO - 20} ${cx - 260},${CHAO - 20}" fill="${cor.amarelo}" opacity="0"/>`;
       // o livro
-      const lw = estreito ? 128 : 240, ly = estreito ? 84 : 150;
+      const lw = estreito ? 104 : 240, ly = estreito ? 78 : 120;
       const lxl = pos.final + (estreito ? viewW * 0.5 - cs : 260);
       H(lxl, ly, estreito ? Math.min(420, viewW - 40) : 700,
         `<div class="final ${estreito ? 'final-estreito' : ''}">
           <img class="capa-livro" src="${livro.capa}" alt="Capa do livro O Curador de Sementes, de Carlos Tobo" style="width:${lw}px" loading="lazy">
           <div class="final-texto"><p class="frase-livro">${livro.frase}</p>
           ${livro.links.map((l) => `<a class="cta ${l.icone === 'insta' ? 'cta-insta' : ''}" href="${l.url}" target="_blank" rel="noopener"><svg viewBox="0 0 100 100" aria-hidden="true">${icone(l.icone)}</svg><span>${l.texto}<small>${l.sub}</small></span></a>`).join('')}
+          ${contato.chave ? '' : '<!-- botão de mensagem aparece quando houver chave em dados.js (contato.chave) -->'}
+          <button class="cta cta-msg" data-painel="contato" ${contato.chave ? '' : 'hidden'}><svg viewBox="0 0 100 100" aria-hidden="true">${icone('carta')}</svg><span>Mandar mensagem<small>direto para mim</small></span></button>
           </div></div>`, 'rot-final');
     }
     out.chao += pedaco(a, b, s);
@@ -419,7 +418,8 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
     ...pos.habilidades.map((x, i) => ({ x: x - meio, id: 'hab-' + i })),
     { x: pos.placaTempo - 40, id: 'tempo' },
     ...pos.tempo.map((x, i) => ({ x: x - 20 - meio, id: 'tempo-' + i })),
-    { x: pos.bau - (estreito ? viewW * 0.6 - cs : meio), id: 'bau' },
+    // o baú fica à direita do Eremita o bastante para nenhuma insígnia ficar atrás dele
+    { x: pos.bau - (estreito ? viewW * 0.6 - cs : Math.max(meio, 300)), id: 'bau' },
     { x: pos.placaVale - 40, id: 'vale' },
     ...pos.sementes.map((x, i) => ({ x: x + 30, id: 'sem-' + i })),
     { x: pos.canteiro - meio, id: 'canteiro' },

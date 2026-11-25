@@ -1,7 +1,7 @@
 // Motor do currículo: a rolagem vertical move o Eremita pelo mundo na horizontal.
 import { defs, monograma, icone, cor } from './arte.js';
 import { construir, construirEspiral, pos, CHAO } from './mundo.js';
-import { regioes, projetos, linhaDoTempo, cursos, resumoCursos, areas } from './dados.js';
+import { regioes, projetos, linhaDoTempo, cursos, resumoCursos, areas, contato } from './dados.js';
 import { svgEremita, Eremita } from './eremita.js';
 
 // Respeita "reduzir movimento" do sistema, mas a pessoa pode ligar as animações pelo botão do HUD
@@ -28,7 +28,7 @@ const CAMADAS = [
 ];
 
 // cores do céu ao longo do caminho
-const CEU = [[0, '#F2C27E'], [2350, '#F2C27E'], [3100, '#F1E6CF'], [5800, '#EFE3C8'], [6500, '#DCE2DE'], [9600, '#E2DCCB'], [10500, '#EBCB98'], [11100, '#DDE6D0'], [14600, '#DCE6CE'], [15300, '#F2BC72'], [17000, '#ECA562']];
+const CEU = [[0, '#F2C27E'], [2350, '#F2C27E'], [3100, '#F1E6CF'], [5800, '#EFE3C8'], [6500, '#DCE2DE'], [9800, '#E2DCCB'], [10800, '#EBCB98'], [11400, '#DDE6D0'], [14600, '#DCE6CE'], [15300, '#F2BC72'], [17000, '#ECA562']];
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 function corCeu(x) {
   for (let i = 0; i < CEU.length - 1; i++) {
@@ -170,7 +170,14 @@ function ligarEventos() {
     irPara(x - E.meio);
   });
   $('#painel').addEventListener('click', (e) => { if (e.target.id === 'painel' || e.target.closest('.fechar')) fecharPainel(); });
-  $('#painel').addEventListener('close', () => { document.documentElement.classList.remove('com-painel'); });
+  // dica com os nomes dos cursos ao passar o mouse (ou focar com Tab) numa insígnia do baú
+  const alvoDica = (e) => e.target.closest && e.target.closest('.insignia-btn');
+  document.addEventListener('pointerover', (e) => { const b = alvoDica(e); if (b && e.pointerType !== 'touch') mostrarDica(b); });
+  document.addEventListener('pointerout', (e) => { if (alvoDica(e)) esconderDica(); });
+  document.addEventListener('focusin', (e) => { const b = alvoDica(e); if (b) mostrarDica(b); });
+  document.addEventListener('focusout', (e) => { if (alvoDica(e)) esconderDica(); });
+  addEventListener('scroll', esconderDica, { passive: true });
+  $('#painel').addEventListener('close', () => { document.documentElement.classList.remove('com-painel'); pararCarrossel(); });
 }
 
 // ------------------------------------------------------------------ quadro a quadro
@@ -301,12 +308,15 @@ function gatilhos(v, dt) {
       gsap.to('#bau-luz', { opacity: 0.6, duration: 0.4 * d });
       gsap.fromTo('.insignia', { scale: 0, opacity: 0, svgOrigin: `${pos.bau} ${CHAO - 110}` }, { scale: 1, opacity: 1, duration: 0.7 * d, stagger: 0.08 * d, ease: 'back.out(1.7)', delay: 0.2 * d });
       gsap.to('.rot-bau-titulo', { opacity: 1, duration: 0.4 * d, delay: 0.5 * d });
+      gsap.set('.rot-insignia', { visibility: 'visible' });
     },
     () => {
       gsap.set('#bau-tampa', { rotation: 0, svgOrigin: `${pos.bau - 98} ${CHAO - 100}` });
       gsap.set('#bau-luz', { opacity: 0 });
       gsap.set('.insignia', { scale: 0, opacity: 0 });
       gsap.set('.rot-bau-titulo', { opacity: 0 });
+      gsap.set('.rot-insignia', { visibility: 'hidden' });
+      esconderDica();
     });
 
   // sementes: colhidas quando o Eremita passa por cima
@@ -361,6 +371,27 @@ function coletar(i) {
   $('#contador').setAttribute('aria-label', `Sementes colhidas: ${n} de 6`);
   if (!reduzido) gsap.fromTo('#contador', { scale: 1.35 }, { scale: 1, duration: 0.6, ease: 'elastic.out(1,0.4)' });
   if (n === 6) $('#contador').classList.add('completo');
+  avisoSemente(n, projetos[i].nome);
+}
+
+// "Semente N plantada" sobe acima do Eremita; se ele colher várias seguidas, os avisos entram em fila
+function avisoSemente(n, nome) {
+  const el = document.createElement('div');
+  el.className = 'aviso-semente';
+  el.setAttribute('aria-hidden', 'true');              // o contador do HUD já anuncia a coleta
+  el.innerHTML = `<strong>Semente ${n} plantada${n === 6 ? '!' : ''}</strong><span>${nome}</span>`;
+  document.body.appendChild(el);
+  const w = el.offsetWidth;
+  const x = Math.max(10, Math.min(innerWidth - w - 10, E.cs * E.s + 70 * E.s));
+  const y = E.offY + (CHAO - 260) * E.s;
+  // o aviso anterior, se ainda estiver na tela, sobe e some para dar lugar ao novo
+  const anterior = E.aviso;
+  if (anterior) { gsap.killTweensOf(anterior); gsap.to(anterior, { y: '-=70', opacity: 0, duration: 0.3, onComplete: () => anterior.remove() }); }
+  E.aviso = el;
+  gsap.set(el, { x, y: y + 30, opacity: 0 });
+  gsap.timeline({ onComplete: () => { el.remove(); if (E.aviso === el) E.aviso = null; } })
+    .to(el, { y, opacity: 1, duration: reduzido ? 0.2 : 0.45, ease: 'back.out(2)' })
+    .to(el, { y: reduzido ? y : y - 50, opacity: 0, duration: 0.5, ease: 'power1.in' }, '+=1.3');
 }
 
 // ------------------------------------------------------------------ região atual
@@ -421,6 +452,74 @@ function atualizarBorboletas(t) {
   });
 }
 
+// ------------------------------------------------------------------ dica das insígnias
+const cursosDaArea = (id) => cursos.flatMap((p) => p.itens).filter((c) => c.a === id).sort((a, b) => b.ano - a.ano);
+function mostrarDica(botao) {
+  const ar = areas[botao.dataset.area], lista = cursosDaArea(botao.dataset.area);
+  const dica = $('#tip-cursos');
+  dica.style.setProperty('--cor-area', ar.cor);
+  dica.innerHTML = `<strong>${ar.nome} <span>×${lista.reduce((t, c) => t + (c.n || 1), 0)}</span></strong>
+    <ul class="${lista.length > 10 ? 'duas' : ''}">${lista.map((c) => `<li>${c.t}<small>${c.ano}</small></li>`).join('')}</ul>
+    <em>clique para ver a lista completa</em>`;
+  dica.hidden = false;
+  const r = botao.getBoundingClientRect(), d = dica.getBoundingClientRect(), m = 10;
+  let x = r.left + r.width / 2 - d.width / 2;
+  x = Math.max(m, Math.min(innerWidth - d.width - m, x));
+  let y = r.top - d.height - 12;                       // prefere em cima; se não couber, embaixo
+  if (y < 64) y = Math.min(innerHeight - d.height - m, r.bottom + 12);
+  dica.style.transform = `translate(${Math.round(x)}px, ${Math.round(Math.max(m, y))}px)`;
+  if (!reduzido) gsap.fromTo(dica, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.18 });
+  else dica.style.opacity = 1;
+}
+function esconderDica() { const d = $('#tip-cursos'); if (d && !d.hidden) { d.hidden = true; } }
+
+// ------------------------------------------------------------------ carrossel dos projetos
+let carrossel = null;
+function iniciarCarrossel(raiz) {
+  pararCarrossel();
+  const slides = $$('.slide', raiz), pontos = $$('.galeria-mini button', raiz), barra = $('.carrossel-barra span', raiz);
+  if (slides.length < 2) return;
+  const TEMPO = 4.2;
+  const c = { i: 0, pausado: false, t: 0, raiz };
+  const ir = (n, manual) => {
+    c.i = (n + slides.length) % slides.length;
+    slides.forEach((s, k) => { s.classList.toggle('ativo', k === c.i); s.setAttribute('aria-hidden', String(k !== c.i)); });
+    pontos.forEach((p, k) => p.setAttribute('aria-pressed', String(k === c.i)));
+    $('.carrossel-contagem', raiz).textContent = `${c.i + 1} / ${slides.length}`;
+    c.t = 0;
+    if (manual && !reduzido) c.pausado = false;
+  };
+  c.ir = ir;
+  pontos.forEach((p, k) => p.addEventListener('click', () => ir(k, true)));
+  $('.carrossel-ant', raiz).addEventListener('click', () => ir(c.i - 1, true));
+  $('.carrossel-prox', raiz).addEventListener('click', () => ir(c.i + 1, true));
+  const caixa = $('.carrossel', raiz);
+  caixa.addEventListener('pointerenter', () => { c.pausado = true; });
+  caixa.addEventListener('pointerleave', () => { c.pausado = false; });
+  caixa.addEventListener('focusin', () => { c.pausado = true; });
+  caixa.addEventListener('focusout', () => { c.pausado = false; });
+  // deslizar com o dedo
+  let x0 = null;
+  caixa.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
+  caixa.addEventListener('pointerup', (e) => { if (x0 !== null && Math.abs(e.clientX - x0) > 40) ir(c.i + (e.clientX < x0 ? 1 : -1), true); x0 = null; });
+  let ant = performance.now();
+  const passo = (agora) => {
+    if (carrossel !== c) return;
+    const dt = (agora - ant) / 1000; ant = agora;
+    if (!c.pausado && !reduzido) {
+      c.t += dt;
+      if (c.t >= TEMPO) ir(c.i + 1);
+    }
+    if (barra) barra.style.transform = `scaleX(${reduzido ? 0 : Math.min(1, c.t / TEMPO)})`;
+    raiz.classList.toggle('pausado', c.pausado || reduzido);
+    c.raf = requestAnimationFrame(passo);
+  };
+  carrossel = c;
+  ir(0);
+  c.raf = requestAnimationFrame(passo);
+}
+function pararCarrossel() { if (carrossel) { cancelAnimationFrame(carrossel.raf); carrossel = null; } }
+
 // ------------------------------------------------------------------ painéis
 let painelOrigem = null;
 function abrirPainel(chave, origem) {
@@ -428,15 +527,15 @@ function abrirPainel(chave, origem) {
   painelOrigem = origem;
   if (chave.startsWith('proj-')) c.innerHTML = painelProjeto(projetos[+chave.slice(5)]);
   else if (chave.startsWith('tempo-')) c.innerHTML = painelTempo(linhaDoTempo[+chave.slice(6)]);
-  else if (chave === 'bau') c.innerHTML = painelBau();
-  c.querySelectorAll('.galeria-mini button').forEach((b) => b.addEventListener('click', () => {
-    const img = c.querySelector('.galeria-grande img');
-    img.src = b.dataset.src; img.alt = b.dataset.alt;
-    c.querySelectorAll('.galeria-mini button').forEach((o) => o.setAttribute('aria-pressed', o === b));
-  }));
+  else if (chave === 'bau') c.innerHTML = painelBau(origem && origem.dataset.area);
+  else if (chave === 'contato') c.innerHTML = painelContato();
+  esconderDica();
+  if (d.open) d.close();
   d.showModal();
+  if (chave === 'contato') ligarFormulario(c);
+  if (chave.startsWith('proj-')) iniciarCarrossel(c);
   document.documentElement.classList.add('com-painel');
-  if (!reduzido) gsap.fromTo(d, { y: 30, opacity: 0, scale: 0.96 }, { y: 0, opacity: 1, scale: 1, duration: 0.35, ease: 'power3.out' });
+  // a entrada é animada no CSS: animar o <dialog> com GSAP tira o painel da camada modal
   d.querySelector('.fechar').focus();
 }
 function fecharPainel() {
@@ -445,21 +544,75 @@ function fecharPainel() {
 }
 
 function painelProjeto(p) {
-  const [src, alt] = p.imagens[0];
+  const n = p.imagens.length;
   return `<p class="painel-cat">Semente · ${p.categoria}</p><h2 id="painel-titulo">${p.nome}</h2>
-    <figure class="galeria-grande ${p.janela ? 'janela' : ''} ${p.vertical ? 'vertical' : ''}"><img src="${src}" alt="${alt}"></figure>
-    <div class="galeria-mini" role="group" aria-label="Imagens do projeto">${p.imagens.map(([s, a], k) => `<button data-src="${s}" data-alt="${a}" aria-pressed="${k === 0}" aria-label="Ver imagem ${k + 1}: ${a}"><img src="${s}" alt="" loading="lazy"></button>`).join('')}</div>
+    <section class="carrossel ${p.janela ? 'janela' : ''}" aria-roledescription="carrossel" aria-label="Imagens do projeto ${p.nome}">
+      <div class="carrossel-palco">
+        ${p.imagens.map(([s, a], k) => `<figure class="slide ${k === 0 ? 'ativo' : ''}" aria-roledescription="slide" aria-label="${k + 1} de ${n}" aria-hidden="${k !== 0}">
+          <span class="slide-fundo" style="background-image:url('${s}')" aria-hidden="true"></span><img src="${s}" alt="${a}" ${k ? 'loading="lazy"' : ''}></figure>`).join('')}
+        ${n > 1 ? `<button class="carrossel-ant" aria-label="Imagem anterior">‹</button><button class="carrossel-prox" aria-label="Próxima imagem">›</button>` : ''}
+        <span class="carrossel-contagem" aria-hidden="true">1 / ${n}</span>
+      </div>
+      ${n > 1 ? `<div class="carrossel-barra" aria-hidden="true"><span></span></div>` : ''}
+    </section>
+    <div class="galeria-mini" role="group" aria-label="Escolher imagem">${p.imagens.map(([s, a], k) => `<button aria-pressed="${k === 0}" aria-label="Ver imagem ${k + 1}: ${a}"><img src="${s}" alt="" loading="lazy"></button>`).join('')}</div>
     <p class="painel-texto">${p.texto}</p>
     ${p.link ? `<a class="cta" href="${p.link}" target="_blank" rel="noopener"><svg viewBox="0 0 100 100" aria-hidden="true">${icone('seta')}</svg><span>${p.linkTexto}</span></a>` : ''}`;
+}
+function painelContato() {
+  return `<p class="painel-cat">Correio do Curador</p><h2 id="painel-titulo">Mande uma mensagem</h2>
+    <p class="painel-texto">Uma dúvida, um convite, uma conversa sobre o livro ou sobre um projeto: escreva aqui que a mensagem chega até mim.</p>
+    <form class="form-contato" novalidate>
+      <label>Seu nome<input name="nome" autocomplete="name" required maxlength="80"></label>
+      <label>Seu e-mail <small>(para eu responder)</small><input name="email" type="email" autocomplete="email" required maxlength="120"></label>
+      <label>Mensagem<textarea name="mensagem" rows="5" required maxlength="3000"></textarea></label>
+      <input type="checkbox" name="botcheck" class="armadilha" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="cta" type="submit"><svg viewBox="0 0 100 100" aria-hidden="true">${icone('carta')}</svg><span>Enviar</span></button>
+      <p class="form-status" role="status" aria-live="polite"></p>
+    </form>`;
+}
+function ligarFormulario(raiz) {
+  const f = $('form', raiz), status = $('.form-status', raiz), botao = $('button[type=submit]', f);
+  f.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    status.className = 'form-status';
+    const campos = [...f.querySelectorAll('[required]')];
+    const vazio = campos.find((c) => !c.value.trim() || !c.checkValidity());
+    if (vazio) {
+      status.textContent = vazio.name === 'email' ? 'Confira o e-mail: ele precisa estar completo, como nome@exemplo.com.' : 'Preencha todos os campos antes de enviar.';
+      status.classList.add('erro'); vazio.focus(); return;
+    }
+    if (f.botcheck.checked) return;                       // robô preencheu a armadilha
+    if (!contato.chave) { status.textContent = 'O formulário ainda está sendo configurado. Tente de novo em breve.'; status.classList.add('erro'); return; }
+    botao.disabled = true; status.textContent = 'Enviando…';
+    try {
+      const r = await fetch(contato.servico, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ access_key: contato.chave, subject: contato.assunto, from_name: 'Currículo interativo', name: f.nome.value.trim(), email: f.email.value.trim(), message: f.mensagem.value.trim() })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.success === false) throw new Error(j.message || r.status);
+      f.reset();
+      status.textContent = 'Mensagem enviada! Obrigado. Vou responder no e-mail que você deixou.';
+      status.classList.add('ok');
+      if (!reduzido) faiscas(E.cs, CHAO - 330, 20);
+    } catch (err) {
+      status.textContent = 'Não consegui enviar agora. Confira a sua conexão e tente de novo daqui a pouco.';
+      status.classList.add('erro');
+    } finally { botao.disabled = false; }
+  });
+  setTimeout(() => f.nome.focus(), 50);
 }
 function painelTempo(it) {
   return `<p class="painel-cat">${it.tipo === 'formacao' ? 'Formação' : 'Trabalho'} · ${it.ano}${it.ate ? '–' + it.ate : ''}</p><h2 id="painel-titulo">${it.titulo}</h2><p class="painel-local">${it.local}</p>
     <ul class="painel-lista">${it.detalhes.map((d) => `<li>${d}</li>`).join('')}</ul>`;
 }
-function painelBau() {
+function painelBau(areaId) {
   const res = resumoCursos(), max = Math.max(...res.map((a) => a.n)), total = res.reduce((t, a) => t + a.n, 0);
   const horas = res.reduce((t, a) => t + a.h, 0);
-  return `<p class="painel-cat">Baú de cursos complementares · 2001 a 2026</p><h2 id="painel-titulo">${total} cursos, mais de ${Math.floor(horas / 100) * 100} horas</h2>
+  const ar = areaId && areas[areaId];
+  const daArea = ar ? `<div class="area-escolhida" style="--cor-area:${ar.cor}"><h3>${ar.nome}</h3><ul>${cursosDaArea(areaId).map((c) => `<li>${c.t}<small>${[c.h ? c.h + ' h' : '', c.ano].filter(Boolean).join(' · ')}</small></li>`).join('')}</ul></div>` : '';
+  return `<p class="painel-cat">Baú de cursos complementares · 2001 a 2026</p><h2 id="painel-titulo">${total} cursos, mais de ${Math.floor(horas / 100) * 100} horas</h2>${daArea}
     <div class="barras" role="list">${res.map((a) => `<div class="barra" role="listitem"><span class="barra-nome"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" fill="${a.cor}"/>${icone(a.icone)}</svg>${a.nome}</span>
       <span class="barra-trilho"><span class="barra-valor" style="width:${(a.n / max) * 100}%;background:${a.cor}"></span></span><span class="barra-num">×${a.n}<small>${a.h ? a.h + ' h' : ''}</small></span></div>`).join('')}</div>
     <p class="nota-barras">Horas somam só os cursos com carga horária informada.</p>

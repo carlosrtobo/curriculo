@@ -120,6 +120,7 @@ export function icone(nome, c = cor.branco) {
     case 'insta': return `<g ${t}><rect x="16" y="16" width="68" height="68" rx="20"/><circle cx="50" cy="50" r="16"/></g><circle cx="70" cy="30" r="5" fill="${c}"/>`;
     case 'semente': return `<path d="M50 14 C74 30 78 66 50 88 C22 66 26 30 50 14Z" fill="${c}"/><path d="M50 26 C58 42 58 62 50 78" stroke="${cor.terra}" stroke-width="4" fill="none" opacity=".5"/>`;
     case 'espiral': return `<path d="M50 50 m0 -4 a4 4 0 1 1 -4 4 a10 10 0 1 1 10 10 a18 18 0 1 1 -18 -18 a28 28 0 1 1 28 28" ${t}/>`;
+    case 'carta': return `<g ${t}><rect x="12" y="24" width="76" height="54" rx="6"/><path d="M14 28 L50 56 L86 28"/></g>`;
     case 'seta': return `<path d="M18 50 H80 M60 30 L82 50 L60 70" ${t}/>`;
     default: return '';
   }
