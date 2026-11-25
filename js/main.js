@@ -50,7 +50,7 @@ async function iniciar() {
     glifo = `<symbol id="glifo" viewBox="0 0 519 94" preserveAspectRatio="none">${corpo}</symbol>`;
   } catch (e) { /* sem glifo, segue */ }
   $('#defs').innerHTML = defs().replace('</defs>', glifo + '</defs>');
-  $('#marca').innerHTML = monograma(cor.terra);
+  $('#marca').innerHTML = monograma();
   $('#eremita-caixa').innerHTML = svgEremita();
   E.er = new Eremita($('#eremita-caixa'), reduzido);
   if (matchMedia('(pointer: coarse)').matches) $('.dica-texto').textContent = 'deslize para caminhar';

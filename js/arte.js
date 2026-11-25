@@ -149,11 +149,10 @@ export function xicara() {
   </svg>`;
 }
 
-// Monograma CT (sem a palavra "visto")
-export function monograma(c = cor.terra) {
-  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="45" fill="none" stroke="${c}" stroke-width="4"/>` +
-    `<path d="M62 24 A16 16 0 1 0 62 46" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round"/>` +
-    `<path d="M24 56 L76 56 L70 64 L56 64 L56 90 M44 90 L44 64 L30 64 Z" fill="none" stroke="${c}" stroke-width="4" stroke-linejoin="round"/></svg>`;
+// Marca CT: o arquivo original do Carlos (Logo Visto CT.png) sem a palavra "visto",
+// no vermelho dos carimbos (#C44E30). Gerada em img/marca/ct.png; não redesenhar.
+export function monograma() {
+  return `<img src="img/marca/ct.png" alt="" width="581" height="581">`;
 }
 
 // Defs globais: símbolos reaproveitados por <use> em todas as camadas

@@ -201,8 +201,12 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
   }
   fim.caixaX = fim.formX + fim.formW / 2 - 60;
   if (!contato.chave) fim.correio = pos.final;
-  const heroFim = fim.correio;
-  const fimMundo = Math.max(heroFim, fim.caixaX) + viewW + 400;
+  // a xícara (voltar ao início) fica depois do formulário; o caminho acaba quando ela aparece inteira
+  const ultimo = contato.chave ? fim.formX + fim.formW / 2 : fim.livroX + fim.livroW / 2;
+  fim.xicaraX = ultimo + (estreito ? 130 : 110);
+  fim.xicara = Math.max(fim.correio, fim.xicaraX + 95 - viewW + cs);
+  const heroFim = fim.xicara;
+  const fimMundo = Math.max(heroFim, fim.caixaX, fim.xicaraX) + viewW + 400;
 
   // ---------- nuvens ----------
   {
@@ -393,8 +397,7 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
           ${contato.chave && fim.correio > pos.final ? `<button class="cta cta-msg" data-correio><svg viewBox="0 0 100 100" aria-hidden="true">${icone('carta')}</svg><span>Mandar mensagem<small>${estreito ? 'logo ali, na caixa de correio' : 'no formulário ao lado'}</small></span></button>` : ''}
           </div></div>`, 'rot-final');
       // xícara de café: volta ao começo do caminho
-      const xx = estreito ? heroFim + viewW * 0.56 - cs : fim.livroX + fim.livroW / 2 - 70;
-      H(xx, CHAO - 168, 150, `<button class="xicara" data-ir="${pos.inicio}" aria-label="Voltar ao início do caminho">${xicara()}<span>voltar ao início</span></button>`, 'rot-xicara');
+      H(fim.xicaraX, CHAO - 168, 150, `<button class="xicara" data-ir="${pos.inicio}" aria-label="Voltar ao início do caminho">${xicara()}<span>voltar ao início</span></button>`, 'rot-xicara');
       // caixa de correio e o formulário, direto no cenário (sem janela por cima)
       if (contato.chave) {
         s += caixaCorreio(fim.caixaX);
@@ -452,7 +455,8 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
     ...pos.sementes.map((x, i) => ({ x: x + 30, id: 'sem-' + i })),
     { x: pos.canteiro - meio, id: 'canteiro' },
     { x: pos.final, id: 'final' },
-    ...(fim.correio > pos.final ? [{ x: fim.correio, id: 'correio' }] : [])
+    ...(fim.correio > pos.final ? [{ x: fim.correio, id: 'correio' }] : []),
+    ...(fim.xicara > fim.correio + 20 ? [{ x: fim.xicara, id: 'xicara' }] : [])
   ];
   return { out, paradas, meio, heroMax: heroFim, correio: fim.correio };
 }
