@@ -9,7 +9,11 @@
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: auto; }
-body { margin: 0; background: #F2C27E; color: var(--terra); font-family: 'Alegreya', Georgia, serif; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+/* Jost (sem serifa, geométrica) nos textos; Alegreya, a fonte do livro, só nos títulos */
+:root { --fonte-texto: 'Jost', 'Segoe UI', system-ui, sans-serif; --fonte-titulo: 'Alegreya', Georgia, serif; }
+body { margin: 0; background: #F2C27E; color: var(--terra); font-family: var(--fonte-texto); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+.abertura .nome, #painel h2, .form-final h2, .titulo-bau, .tabua, .cartao-tempo strong, .fruto-nome, .rot-hab strong,
+.nivel, #placa-fase strong, .aviso-semente strong, .titulo-canteiro, .area-escolhida h3, #tip-cursos strong { font-family: var(--fonte-titulo); }
 button { font: inherit; color: inherit; }
 
 /* ---------- barras de rolagem na identidade do site ---------- */
@@ -53,16 +57,16 @@ html { scrollbar-color: var(--terracota) rgba(241, 233, 218, .6); }            /
 /* ---------- itens do mundo (em unidades: 1px aqui = 1/1000 da altura da tela) ---------- */
 .item { position: absolute; pointer-events: auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .item strong { font-weight: 800; }
-.local { font-style: italic; font-size: 19px; opacity: .85; }
+.local { font-style: italic; font-size: 17px; opacity: .85; }
 
 .abertura { pointer-events: none; gap: 0; }
 .abertura .nome { margin: 0; font-size: 128px; line-height: .95; font-weight: 900; letter-spacing: -1px; color: var(--terra); }
-.abertura .titulo { margin: 18px 0 0; font-size: 31px; font-weight: 700; color: var(--terra); max-width: 760px; }
-.abertura .frase { margin: 22px 0 0; font-size: 36px; font-style: italic; line-height: 1.25; max-width: 700px; }
+.abertura .titulo { margin: 18px 0 0; font-size: 26px; font-weight: 500; letter-spacing: .2px; color: var(--terra); max-width: 760px; }
+.abertura .frase { margin: 20px 0 0; font-size: 29px; font-style: italic; font-weight: 400; line-height: 1.3; max-width: 680px; }
 .abertura .pal { display: inline-block; }
 .abertura.estreito .nome { font-size: 84px; }
-.abertura.estreito .titulo { font-size: 25px; }
-.abertura.estreito .frase { font-size: 27px; }
+.abertura.estreito .titulo { font-size: 21px; }
+.abertura.estreito .frase { font-size: 22px; }
 
 .tabua { display: inline-flex; align-items: center; gap: 8px; background: #8A5A3A; color: var(--osso); border: 4px solid var(--branco); border-radius: 10px; padding: 8px 18px; font-size: 27px; font-weight: 800; box-shadow: var(--sombra); transform: rotate(-2deg); }
 .tabua .ico { width: 30px; height: 30px; background: var(--osso); border-radius: 50%; }
@@ -103,16 +107,16 @@ html { scrollbar-color: var(--terracota) rgba(241, 233, 218, .6); }            /
 .capa-livro { border: 6px solid var(--branco); border-radius: 6px; box-shadow: 0 14px 0 rgba(46, 29, 20, .3); transform: rotate(-3deg); }
 .final-texto { display: flex; flex-direction: column; gap: 12px; }
 .final-estreito .final-texto { align-items: stretch; width: 100%; gap: 9px; }
-.frase-livro { margin: 0 0 4px; font-size: 27px; font-style: italic; font-weight: 700; line-height: 1.2; }
-.final-estreito .frase-livro { font-size: 21px; }
+.frase-livro { margin: 0 0 4px; font-size: 23px; font-style: italic; font-weight: 500; line-height: 1.2; }
+.final-estreito .frase-livro { font-size: 18px; }
 .final-estreito { gap: 10px; }
-.cta { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 8px 20px 8px 12px; background: var(--terracota); color: var(--branco); text-decoration: none; border: 4px solid var(--branco); border-radius: 16px; box-shadow: var(--sombra); font-size: 23px; font-weight: 800; line-height: 1.05; transition: transform .2s, background .2s; }
+.cta { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 8px 20px 8px 12px; background: var(--terracota); color: var(--branco); text-decoration: none; border: 4px solid var(--branco); border-radius: 16px; box-shadow: var(--sombra); font-size: 20px; font-weight: 600; line-height: 1.1; transition: transform .2s, background .2s; }
 .cta svg { width: 38px; height: 38px; flex: none; }
-.cta small { display: block; font-size: 16px; font-weight: 600; font-style: italic; opacity: .9; }
+.cta small { display: block; font-size: 14px; font-weight: 400; font-style: italic; opacity: .9; }
 .cta:hover, .cta:focus-visible { transform: translateY(-3px) rotate(-1deg); background: #A9432B; }
 .cta-insta { background: var(--roxo); }
 .cta-insta:hover, .cta-insta:focus-visible { background: #3A1F47; }
-.final-estreito .cta { min-height: 52px; font-size: 20px; padding-top: 5px; padding-bottom: 5px; }
+.final-estreito .cta { min-height: 52px; font-size: 18px; padding-top: 5px; padding-bottom: 5px; }
 .final-estreito .final-texto { gap: 7px; }
 .final-estreito .cta { text-align: left; }
 .cta-msg[hidden] { display: none; }
@@ -126,8 +130,8 @@ html { scrollbar-color: var(--terracota) rgba(241, 233, 218, .6); }            /
 .form-final { width: 100%; margin: 0; gap: 10px; text-align: left; background: var(--osso); border: 5px solid var(--branco); border-radius: 18px; padding: 16px 20px 14px; box-shadow: 0 10px 0 rgba(46, 29, 20, .28); }
 .form-final h2 { margin: 0; font-size: 34px; line-height: 1; font-weight: 900; }
 .form-final .painel-cat { font-size: 15px; }
-.form-final .form-intro { margin: 0; font-size: 19px; font-style: italic; line-height: 1.3; }
-.form-final label { font-size: 19px; }
+.form-final .form-intro { margin: 0; font-size: 17px; font-style: italic; line-height: 1.3; }
+.form-final label { font-size: 17px; font-weight: 600; }
 .form-final input, .form-final textarea { font-size: 20px; padding: 8px 12px; }   /* 20 unidades: no celular fica >= 16px e o iPhone não dá zoom */
 .form-final textarea { min-height: 0; }
 .form-final .cta { font-size: 22px; min-height: 52px; }
@@ -251,8 +255,8 @@ dialog#painel[open] { animation: abre-painel .35s cubic-bezier(.2, .8, .3, 1); }
 .painel-cat { margin: 0; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--terracota); }
 #painel h2 { margin: 4px 0 10px; font-size: clamp(26px, 5vw, 36px); line-height: 1.08; font-weight: 900; }
 .painel-local { margin: -4px 0 12px; font-style: italic; font-size: 19px; }
-.painel-texto { font-size: 19px; line-height: 1.45; }
-.painel-lista { padding-left: 20px; font-size: 18px; line-height: 1.45; }
+.painel-texto { font-size: 17px; line-height: 1.55; }
+.painel-lista { padding-left: 20px; font-size: 16px; line-height: 1.55; }
 .painel-lista li { margin-bottom: 6px; }
 /* ---------- insígnias do baú e a dica com os cursos ---------- */
 .rot-insignia { visibility: hidden; }
