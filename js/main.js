@@ -23,7 +23,7 @@ const E = {                      // estado
 
 const CAMADAS = [
   ['c-nuvens', 0.07, 'nuvens'], ['c-espiral', 0.04, null], ['c-longe', 0.18, 'longe'],
-  ['c-ceu-info', 0.3, 'ceuInfo'], ['c-meio', 0.5, 'meio'], ['c-borboletas', 0.8, null],
+  ['c-ceu-info', 0.3, 'ceuInfo'], ['c-meio', 0.5, 'meio'], ['c-perto', 0.78, 'perto'], ['c-borboletas', 0.8, null],
   ['c-chao', 1, 'chao'], ['c-info', 1, 'info'], ['c-frente', 1.35, 'frente']
 ];
 
@@ -350,8 +350,7 @@ function atualizarEspiral(dt) {
   if (reduzido) E.q = alvoQ;
   if (qAntes < 0.02 && E.q >= 0.02 && alvoQ === 1) quebrarEspiral();
   if (E.camX > 5000 && E.q === 1) return;
-  const q = E.q, rot = reduzido ? 0.6 : E.hero * 0.0024;
-  const pontos = [];
+  const q = E.q, rot = reduzido ? 0.6 : E.hero * 0.0024;  const pontos = [];
   esp.plantas.forEach((p, i) => {
     const ang = p.t + rot, rr = esp.Rm * (p.t / esp.tMax);
     const fundo = (Math.sin(ang) + 1) / 2;

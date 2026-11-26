@@ -185,7 +185,7 @@ export function construir(ctx) {
   const lx = (f, heroX, telaX) => (heroX - cs) * f + telaX;
   const faixa = (f, r, ext = 0) => [lx(f, r.ini - ext, -300), lx(f, r.fim + ext, viewW + 300)];
 const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<svg data-reg="${reg}" `);
-  const out = { longe: '', meio: '', chao: '', info: '', frente: '', nuvens: '', ceuInfo: '' };
+  const out = { longe: '', meio: '', perto: '', chao: '', info: '', frente: '', nuvens: '', ceuInfo: '' };
   // fim do caminho: livro + formulário. No desktop largo o formulário cabe ao lado do livro;
   // senão o Eremita anda um pouco mais até a caixa de correio.
   const fim = {};
@@ -424,7 +424,35 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
         else if (reg.id === 'piramide') s += k < 0.5 ? pedra(x, 1010, 160, 90, (x | 0), [cor.pedraEsc, cor.pedra, cor.carvao]) : usar('capim', x, 1004, 1.6);
         else s += k < 0.5 ? usar('capim2', x, 1004, 1.7) : pedra(x, 1010, 140, 80, (x | 0), [cor.pedraClara, cor.osso, cor.pedra]);
       }
+      // parallax: cogumelos e duendes grandes bem na frente, cortados pela borda de baixo
+      const g = rng(reg.ini + 91);
+      for (let x = a + 500; x < b - 200; x += 1100 + g() * 700) {
+        const k = g();
+        if (k < 0.4) s += cogumelo(x, 1045, 1.75, k < 0.2 ? '#C44E30' : '#B5552F');
+        else if (k < 0.7) s += cogumelos(x, 1018, 1.9);
+        else s += duendeEspiando(x, 1048, 1.45, [cor.terracota, cor.salviaEsc, cor.roxo][(x | 0) % 3]);
+      }
       out.frente += pedaco(a, b, s);
+    }
+  }
+
+  // ---------- perto do fundo (f 0.78): duendes e cogumelos pequenos na beira de trás da trilha ----------
+  {
+    const f = 0.78;
+    for (const reg of regioes) {
+      let [a, b] = faixa(f, reg);
+      if (reg.id === 'cafezal') a = Math.min(a, -viewW);
+      if (reg.id === 'retorno') b = Math.max(b, lx(f, heroFim, viewW + 400));
+      const g = rng(reg.ini + 17);
+      let s = '';
+      for (let x = a + 200; x < b; x += 380 + g() * 520) {
+        const k = g(), y = 818 + g() * 8;
+        if (k < 0.3) s += cogumelo(x, y, 0.5 + g() * 0.15, k < 0.15 ? '#C44E30' : '#A0703F');
+        else if (k < 0.6) s += cogumelos(x, y, 0.55);
+        else if (k < 0.8) s += duende(x, y, 0.5, g() < 0.5 ? 'acena' : 'pe', [cor.terracota, cor.salviaEsc, cor.roxo, '#2F6FB0'][(x | 0) % 4]);
+        else s += cogumelo(x, y, 0.62) + duende(x, y - 0.62 * 94, 0.45, 'sentado', cor.salviaEsc);
+      }
+      out.perto += pedaco(a, b, `<g opacity=".93">${s}</g>`);
     }
   }
 
