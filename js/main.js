@@ -95,13 +95,8 @@ function montar(primeira) {
   montarBorboletas();
   E.espEls = { plantas: $$('#esp-plantas use'), sulco: $('#esp-sulco'), disco: $('#esp-disco'), cacos: $$('#c-espiral .caco'), grupo: $('#esp-plantas') };
 
-  // Eremita: posição fixa na tela
-  const cx = $('#eremita-caixa');
-  const alt = 380 * 0.82 * E.s, larg = 240 * 0.82 * E.s;
-  Object.assign(cx.style, { width: larg + 'px', height: alt + 'px', left: (E.cs * E.s - (104 + 20) * 0.82 * E.s) + 'px', top: (E.offY + (CHAO - 368 * 0.82) * E.s) + 'px' });
-  $('#particulas').setAttribute('viewBox', `0 ${-E.offY / E.s} ${E.viewW} ${innerHeight / E.s}`);
-
-  $('#rolagem').style.height = ((E.heroMax - HERO_MIN) * E.s * RITMO + innerHeight) + 'px';
+  E.larguraMontada = w; E.alturaMontada = h;
+  ajustarAltura();
   document.documentElement.style.setProperty('--s', E.s);
   montarMenu();
   E.regiao = -1;                                 // remarca a seção atual no menu
@@ -114,6 +109,21 @@ function montar(primeira) {
 }
 
 const heroParaRolagem = (x) => (x - HERO_MIN) * E.s * RITMO;
+
+// Tudo o que depende só da altura da janela. No celular a barra de endereço some e aparece
+// enquanto se rola: aí a altura muda um pouco e basta reancorar o chão embaixo, sem remontar o mundo.
+function ajustarAltura() {
+  const h = innerHeight;
+  E.offY = h - 1000 * E.s;                       // o chão fica sempre colado embaixo; o céu cresce ou encolhe em cima
+  const cx = $('#eremita-caixa');
+  const alt = 380 * 0.82 * E.s, larg = 240 * 0.82 * E.s;
+  Object.assign(cx.style, { width: larg + 'px', height: alt + 'px', left: (E.cs * E.s - (104 + 20) * 0.82 * E.s) + 'px', top: (E.offY + (CHAO - 368 * 0.82) * E.s) + 'px' });
+  $('#particulas').setAttribute('viewBox', `0 ${-E.offY / E.s} ${E.viewW} ${h / E.s}`);
+  // folga no fim: com a barra do navegador escondida a janela fica mais alta e a página precisa
+  // continuar longa o bastante para o Eremita chegar até a xícara
+  const folga = Math.max(h, (screen && screen.height) || 0, E.alturaMontada || 0) + 120;
+  $('#rolagem').style.height = ((E.heroMax - HERO_MIN) * E.s * RITMO + folga) + 'px';
+}
 
 // Tela cheia no computador. Nenhum navegador deixa um site entrar em tela cheia sozinho ao abrir:
 // é preciso um clique ou uma tecla. Então ela entra no PRIMEIRO clique ou tecla da visita
@@ -212,7 +222,14 @@ function irPara(x) {
 
 function ligarEventos() {
   let t;
-  addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => montar(false), 200); });
+  addEventListener('resize', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      // só a altura mudou pouco (barra de endereço do celular): reancora, não remonta
+      if (E.esp && innerWidth === E.larguraMontada && Math.abs(innerHeight - E.alturaMontada) < E.alturaMontada * 0.3) ajustarAltura();
+      else montar(false);
+    }, 150);
+  });
   // qualquer botão com data-ir leva o Eremita até lá (menu de grãos, xícara)
   document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-ir]'); if (!b) return;
