@@ -1,6 +1,6 @@
 // Monta o mundo: camadas de parallax (longe → frente) e os objetos do currículo.
 // Tudo em "unidades": a tela tem 1000 de altura; o chão fica em y = 830.
-import { cor, rng, pedra, icone, xicara } from './arte.js';
+import { cor, rng, pedra, icone, xicara, cogumelo, cogumelos, duende, duendeEspiando } from './arte.js';
 import { regioes, habilidades, linhaDoTempo, projetos, resumoCursos, livro, contato } from './dados.js';
 
 export const CHAO = 830;
@@ -404,6 +404,7 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
         H(fim.formX, estreito ? 92 : 120, fim.formW, formulario(estreito), 'rot-form', 'id="correio"');
       }
     }
+    s += enfeites(reg.id);
     out.chao += pedaco(a, b, s);
   }
   out.info = info.join('');
@@ -445,13 +446,13 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
   const paradas = [
     { x: pos.inicio, id: 'inicio' },
     { x: pos.quebra + 140, id: 'quebra' },
-    { x: pos.placaHab - 40, id: 'hab' },
+    { x: pos.placaHab - 170, id: 'hab' },
     ...pos.habilidades.map((x, i) => ({ x: x - meio, id: 'hab-' + i })),
-    { x: pos.placaTempo - 40, id: 'tempo' },
+    { x: pos.placaTempo - 170, id: 'tempo' },
     ...pos.tempo.map((x, i) => ({ x: x - 20 - meio, id: 'tempo-' + i })),
     // o baú fica à direita do Eremita o bastante para nenhuma insígnia ficar atrás dele
     { x: pos.bau - (estreito ? viewW * 0.6 - cs : Math.max(meio, 300)), id: 'bau' },
-    { x: pos.placaVale - 40, id: 'vale' },
+    { x: pos.placaVale - 170, id: 'vale' },
     ...pos.sementes.map((x, i) => ({ x: x + 30, id: 'sem-' + i })),
     { x: pos.canteiro - meio, id: 'canteiro' },
     { x: pos.final, id: 'final' },
@@ -459,6 +460,19 @@ const bioma = (x0, x1, c, reg) => pedaco(x0, x1, c, 'bioma').replace('<svg ', `<
     ...(fim.xicara > fim.correio + 20 ? [{ x: fim.xicara, id: 'xicara' }] : [])
   ];
   return { out, paradas, meio, heroMax: heroFim, correio: fim.correio };
+}
+
+// duendes e cogumelos pelo caminho, nos vãos entre plantas, marcos e sementes
+function enfeites(reg) {
+  const C = CHAO + 3;
+  switch (reg) {
+    case 'cafezal': return cogumelo(760, C, 0.8) + duende(1420, C, 0.85, 'acena') + cogumelos(1500, C, 0.9) + cogumelos(2060, C, 0.8);
+    case 'fuga': return cogumelo(3640, C, 0.75) + cogumelo(4495, C, 1.1, '#B5552F') + duende(4495, C - 104, 0.8, 'sentado', cor.salviaEsc) + cogumelos(5355, C, 0.9);
+    case 'piramide': return duendeEspiando(6460, C, 0.9) + cogumelos(10080, C, 0.85) + cogumelo(10160, C, 0.6);
+    case 'vale': return cogumelo(12530, C, 1.1) + duende(12530, C - 104, 0.8, 'sentado', cor.roxo) + cogumelos(13610, C, 0.9) + duendeEspiando(14150, C, 0.85, cor.terracota);
+    case 'retorno': return cogumelos(15330, C, 0.85) + cogumelo(15420, C, 0.7) + duende(16120, C, 0.85, 'acena', cor.salviaEsc);
+    default: return '';
+  }
 }
 
 // formulário de mensagem que fica no cenário final

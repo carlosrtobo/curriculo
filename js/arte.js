@@ -126,6 +126,58 @@ export function icone(nome, c = cor.branco) {
   }
 }
 
+// ---------- cogumelos e duendes (base no chão, em y = 0) ----------
+const CONT = cor.branco;
+export function cogumelo(x, y, s = 1, tom = '#C44E30') {
+  return `<g transform="translate(${x} ${y}) scale(${s})">
+    <path d="M-10 0 Q-13 -30 -8 -52 H8 Q13 -30 10 0Z" fill="${cor.osso}" stroke="${CONT}" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M-6 -40 Q0 -36 6 -40" stroke="${cor.pedraEsc}" stroke-width="2.5" fill="none"/>
+    <path d="M-46 -48 Q-44 -96 0 -98 Q44 -96 46 -48 Q0 -40 -46 -48Z" fill="${tom}" stroke="${CONT}" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M-40 -50 Q0 -42 40 -50" stroke="#8E3420" stroke-width="3" fill="none" opacity=".5"/>
+    <circle cx="-20" cy="-74" r="7" fill="${cor.osso}"/><circle cx="8" cy="-84" r="6" fill="${cor.osso}"/><circle cx="26" cy="-64" r="5" fill="${cor.osso}"/><circle cx="-4" cy="-62" r="4" fill="${cor.osso}"/><circle cx="-34" cy="-58" r="3.5" fill="${cor.osso}"/>
+  </g>`;
+}
+export function cogumelos(x, y, s = 1) {
+  const um = (dx, h, r, tom) => `<path d="M${dx - 5} 0 Q${dx - 6} ${-h * .5} ${dx - 3} ${-h} H${dx + 3} Q${dx + 6} ${-h * .5} ${dx + 5} 0Z" fill="${cor.osso}" stroke="${CONT}" stroke-width="3"/>
+    <path d="M${dx - r} ${-h + 2} Q${dx} ${-h - r * 1.3} ${dx + r} ${-h + 2} Q${dx} ${-h + 7} ${dx - r} ${-h + 2}Z" fill="${tom}" stroke="${CONT}" stroke-width="4" stroke-linejoin="round"/>`;
+  return `<g transform="translate(${x} ${y}) scale(${s})">${um(-26, 34, 18, '#8A5A3A')}${um(20, 26, 15, '#A0703F')}${um(0, 52, 24, '#7A4A2C')}${um(38, 16, 11, '#8A5A3A')}</g>`;
+}
+// duende: gorro pontudo, barba branca, túnica sálvia. pose: 'pe' (em pé), 'acena', 'sentado'
+export function duende(x, y, s = 1, pose = 'pe', gorro = cor.terracota) {
+  const sentado = pose === 'sentado';
+  const corpoY = sentado ? -36 : 0;
+  const pernas = sentado
+    ? `<path d="M-14 ${corpoY + 4} q-4 22 -22 26 M14 ${corpoY + 4} q4 22 22 26" stroke="${cor.terra}" stroke-width="9" stroke-linecap="round" fill="none"/>
+       <ellipse cx="-38" cy="${corpoY + 32}" rx="11" ry="6" fill="${cor.terraEsc}" stroke="${CONT}" stroke-width="3"/><ellipse cx="38" cy="${corpoY + 32}" rx="11" ry="6" fill="${cor.terraEsc}" stroke="${CONT}" stroke-width="3"/>`
+    : `<rect x="-14" y="-22" width="10" height="20" fill="${cor.terra}"/><rect x="4" y="-22" width="10" height="20" fill="${cor.terra}"/>
+       <ellipse cx="-11" cy="-3" rx="12" ry="7" fill="${cor.terraEsc}" stroke="${CONT}" stroke-width="3"/><ellipse cx="11" cy="-3" rx="12" ry="7" fill="${cor.terraEsc}" stroke="${CONT}" stroke-width="3"/>`;
+  const braco = (lado) => `<g><path d="M${lado * 16} ${corpoY - 52} q${lado * 16} 10 ${lado * 18} 28" stroke="${cor.salviaEsc}" stroke-width="10" stroke-linecap="round" fill="none"/><circle cx="${lado * 34}" cy="${corpoY - 22}" r="7" fill="#E2B48C" stroke="${CONT}" stroke-width="3"/></g>`;
+  const bracoAcena = `<g class="braco-acena"><path d="M16 ${corpoY - 54} q16 -10 20 -32" stroke="${cor.salviaEsc}" stroke-width="10" stroke-linecap="round" fill="none"/><circle cx="37" cy="${corpoY - 90}" r="7" fill="#E2B48C" stroke="${CONT}" stroke-width="3"/></g>`;
+  return `<g class="duende duende-${pose}" transform="translate(${x} ${y}) scale(${s})">
+    ${pernas}
+    <path d="M-22 ${corpoY - 18} Q-24 ${corpoY - 62} 0 ${corpoY - 66} Q24 ${corpoY - 62} 22 ${corpoY - 18}Z" fill="${cor.salvia}" stroke="${CONT}" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M-20 ${corpoY - 26} H20" stroke="${cor.terra}" stroke-width="5"/>
+    ${braco(-1)}${pose === 'acena' ? bracoAcena : braco(1)}
+    <circle cx="0" cy="${corpoY - 80}" r="17" fill="#E2B48C" stroke="${CONT}" stroke-width="4"/>
+    <path d="M-17 ${corpoY - 78} Q-22 ${corpoY - 46} 0 ${corpoY - 38} Q22 ${corpoY - 46} 17 ${corpoY - 78} Q8 ${corpoY - 70} 0 ${corpoY - 72} Q-8 ${corpoY - 70} -17 ${corpoY - 78}Z" fill="${cor.branco}" stroke="#E6DCCB" stroke-width="2"/>
+    <circle cx="0" cy="${corpoY - 76}" r="5" fill="#D47A62"/>
+    <g class="olhos-duende"><circle cx="-6" cy="${corpoY - 84}" r="2.2" fill="${cor.carvao}"/><circle cx="6" cy="${corpoY - 84}" r="2.2" fill="${cor.carvao}"/></g>
+    <path d="M-21 ${corpoY - 88} Q-18 ${corpoY - 128} 8 ${corpoY - 150} Q26 ${corpoY - 158} 30 ${corpoY - 146} Q14 ${corpoY - 132} 21 ${corpoY - 88} Q0 ${corpoY - 94} -21 ${corpoY - 88}Z" fill="${gorro}" stroke="${CONT}" stroke-width="4" stroke-linejoin="round"/>
+    <circle cx="30" cy="${corpoY - 146}" r="6" fill="${cor.amarelo}" stroke="${CONT}" stroke-width="3"/>
+  </g>`;
+}
+// duende que espia de trás de uma pedra (sobe e desce; a pedra fica na frente)
+let nEspia = 0;
+export function duendeEspiando(x, y, s = 1, gorro = cor.salviaEsc) {
+  const id = 'clip-espia-' + (++nEspia);
+  // o recorte esconde o corpo abaixo do chão quando ele desce para trás da pedra
+  return `<g transform="translate(${x} ${y}) scale(${s})">
+    <clipPath id="${id}"><rect x="-120" y="-320" width="240" height="326"/></clipPath>
+    <g clip-path="url(#${id})"><g class="duende-espia">${duende(0, 30, 1, 'pe', gorro)}</g></g>
+    ${pedra(-70, 4, 140, 82, 77, [cor.pedra, cor.pedraClara, cor.pedraEsc])}
+  </g>`;
+}
+
 // Grão de café (menu flutuante): oval marrom com o sulco em S
 export function grao(fundo = '#6B3F26', sulco = '#3A2217') {
   return `<svg viewBox="0 0 100 100" aria-hidden="true"><g transform="rotate(-28 50 50)">

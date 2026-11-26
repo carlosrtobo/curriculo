@@ -52,6 +52,15 @@ html { scrollbar-color: var(--terracota) rgba(241, 233, 218, .6); }            /
 .reflexo { animation: brilha 3s ease-in-out infinite alternate; }
 @keyframes brilha { from { opacity: .4; } to { opacity: 1; } }
 .sem-halo { animation: pulsa 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+/* duendes: um espia de trás da pedra, outro acena, todos piscam */
+.duende-espia { animation: espiar 6.5s ease-in-out infinite; }
+@keyframes espiar { 0%, 30% { transform: translateY(95px); } 42%, 72% { transform: translateY(-40px); } 76% { transform: translateY(-46px); } 86%, 100% { transform: translateY(95px); } }
+.braco-acena { transform-box: fill-box; transform-origin: 15% 95%; animation: acenar 1.4s ease-in-out infinite; }
+@keyframes acenar { 0%, 100% { transform: rotate(8deg); } 50% { transform: rotate(-28deg); } }
+.olhos-duende { transform-box: fill-box; transform-origin: center; animation: piscar-duende 4.5s infinite; }
+@keyframes piscar-duende { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+.reduzido .duende-espia { animation: none; transform: translateY(-40px); }
+.reduzido .braco-acena, .reduzido .olhos-duende { animation: none; }
 @keyframes pulsa { 50% { transform: scale(1.35); opacity: .12; } }
 
 /* ---------- itens do mundo (em unidades: 1px aqui = 1/1000 da altura da tela) ---------- */

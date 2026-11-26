@@ -161,10 +161,10 @@ function ligarTelaCheia() {
 function montarMenu() {
   const itens = [
     ['Início · Cafezal', pos.inicio, 0],
-    ['Habilidades', pos.placaHab - 40, 1],
-    ['Formação e experiência', pos.placaTempo - 40, 2],
+    ['Habilidades', pos.placaHab - 170, 1],
+    ['Formação e experiência', pos.placaTempo - 170, 2],
     ['Baú de cursos', (E.paradas.find((p) => p.id === 'bau') || {}).x, 2],
-    ['Projetos', pos.placaVale - 40, 3],
+    ['Projetos', pos.placaVale - 170, 3],
     ['O livro', pos.final, 4]
   ];
   const tons = ['#7A4A2C', '#6B3F26', '#8A5A3A', '#5C3520', '#7A4A2C', '#6B3F26', '#8A5A3A', '#5C3520'];
