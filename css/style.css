@@ -165,6 +165,14 @@ html { scrollbar-color: var(--terracota) rgba(241, 233, 218, .6); }            /
 #btn-animacao { background: var(--osso); color: var(--terra); font-weight: 700; font-size: 14px; padding: 8px 12px; border-radius: 30px; border: 3px solid var(--branco); cursor: pointer; }
 #btn-animacao:hover { background: var(--amarelo); }
 #btn-animacao[hidden] { display: none; }
+#btn-tela { width: 46px; height: 46px; padding: 9px; border-radius: 50%; border: 3px solid var(--branco); background: var(--osso); color: var(--terra); cursor: pointer; box-shadow: 0 3px 0 rgba(46, 29, 20, .25); display: grid; place-items: center; }
+#btn-tela[hidden] { display: none; }
+#btn-tela svg { width: 100%; height: 100%; grid-area: 1 / 1; }
+#btn-tela .ico-sair, .tela-cheia #btn-tela .ico-abrir { display: none; }
+.tela-cheia #btn-tela .ico-sair { display: block; }
+.tela-cheia #btn-tela { background: var(--terra); color: var(--osso); }
+#btn-tela:hover { background: var(--amarelo); color: var(--terra); }
+#btn-tela:focus-visible { outline: 4px solid var(--roxo); outline-offset: 4px; }
 @media (max-width: 560px) { #btn-animacao { font-size: 12px; padding: 7px 9px; } }
 @media (max-width: 420px) {
   #hud { padding-left: 12px; padding-right: 12px; }

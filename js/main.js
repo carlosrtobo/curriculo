@@ -65,6 +65,7 @@ async function iniciar() {
     });
   }
   document.documentElement.classList.toggle('reduzido', reduzido);
+  ligarTelaCheia();
   montar(true);
   ligarEventos();
   if (!reduzido) animarAbertura();
@@ -113,6 +114,38 @@ function montar(primeira) {
 }
 
 const heroParaRolagem = (x) => (x - HERO_MIN) * E.s * RITMO;
+
+// Tela cheia no computador. Nenhum navegador deixa um site entrar em tela cheia sozinho ao abrir:
+// é preciso um clique ou uma tecla. Então ela entra no PRIMEIRO clique ou tecla da visita
+// (a roda do mouse não conta para o navegador). O ícone do topo volta ao navegador e entra de novo.
+function ligarTelaCheia() {
+  const el = document.documentElement;
+  const pode = document.fullscreenEnabled && matchMedia('(pointer: fine)').matches;
+  if (!pode) return;
+  const bt = $('#btn-tela');
+  bt.hidden = false;
+  const entrar = () => el.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+  const alternar = () => (document.fullscreenElement ? document.exitFullscreen().catch(() => {}) : entrar());
+  bt.addEventListener('click', alternar);
+  // primeira interação da visita: entra em tela cheia uma vez só (se a pessoa sair, respeita)
+  const primeira = (e) => {
+    if (e.type === 'keydown' && ['Escape', 'Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return;
+    if (e.target.closest && e.target.closest('#btn-tela, a[href]')) return;   // o próprio ícone e links já fazem outra coisa
+    removeEventListener('pointerdown', primeira, true);
+    removeEventListener('keydown', primeira, true);
+    if (!document.fullscreenElement) entrar();
+  };
+  addEventListener('pointerdown', primeira, true);
+  addEventListener('keydown', primeira, true);
+  const atualizar = () => {
+    const cheia = !!document.fullscreenElement;
+    el.classList.toggle('tela-cheia', cheia);
+    const txt = cheia ? 'Voltar ao navegador' : 'Ver em tela cheia';
+    bt.setAttribute('aria-label', txt); bt.title = txt + (cheia ? ' (Esc)' : '');
+  };
+  document.addEventListener('fullscreenchange', atualizar);
+  atualizar();
+}
 
 // menu flutuante: um grão de café que abre outros grãos, um para cada seção
 function montarMenu() {
