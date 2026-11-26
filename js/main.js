@@ -648,6 +648,7 @@ function abrirPainel(chave, origem) {
   if (d.open) d.close();
   d.showModal();
   if (chave.startsWith('proj-')) iniciarCarrossel(c);
+  if (chave === 'bau') ligarBau(c, origem && origem.dataset.area);
   document.documentElement.classList.add('com-painel');
   // a entrada é animada no CSS: animar o <dialog> com GSAP tira o painel da camada modal
   d.querySelector('.fechar').focus();
@@ -711,14 +712,40 @@ function painelTempo(it) {
 function painelBau(areaId) {
   const res = resumoCursos(), max = Math.max(...res.map((a) => a.n)), total = res.reduce((t, a) => t + a.n, 0);
   const horas = res.reduce((t, a) => t + a.h, 0);
+  // uma lista só, sempre com o mesmo visual. Cada barra filtra a lista pela área;
+  // quem chega por uma insígnia do baú já vê a lista filtrada naquela área.
+  return `<p class="painel-cat">Baú de cursos complementares · 2001 a 2026</p><h2 id="painel-titulo">${total} cursos, mais de ${Math.floor(horas / 100) * 100} horas</h2>
+    <div class="barras">${res.map((a) => `<button class="barra" data-area="${a.id}" aria-pressed="false"><span class="barra-nome"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" fill="${a.cor}"/>${icone(a.icone)}</svg>${a.nome}</span>
+      <span class="barra-trilho"><span class="barra-valor" style="width:${(a.n / max) * 100}%;background:${a.cor}"></span></span><span class="barra-num">×${a.n}<small>${a.h ? a.h + ' h' : ''}</small></span></button>`).join('')}</div>
+    <p class="nota-barras">Toque numa área para ver só os cursos dela. As horas somam apenas os cursos com carga horária informada.</p>
+    <p class="filtro-ativo" hidden aria-live="polite"><span></span> <button class="filtro-limpar">mostrar todos</button></p>
+    <div class="lista-cursos">${cursos.map((p) => `<details class="periodo"><summary><strong>${p.periodo}</strong> · ${p.titulo} <span class="periodo-n">(${p.itens.reduce((t, c) => t + (c.n || 1), 0)})</span></summary>
+      <ul>${p.itens.map((c) => `<li data-a="${c.a}" data-n="${c.n || 1}"><span class="ponto-area" style="background:${areas[c.a].cor}" title="${areas[c.a].nome}"></span>${c.t}<small>${[c.h ? c.h + ' h' : '', c.ano].filter(Boolean).join(' · ')}</small></li>`).join('')}</ul></details>`).join('')}</div>`;
+}
+
+function filtrarBau(raiz, areaId) {
   const ar = areaId && areas[areaId];
-  const daArea = ar ? `<div class="area-escolhida" style="--cor-area:${ar.cor}"><h3>${ar.nome}</h3><ul>${cursosDaArea(areaId).map((c) => `<li>${c.t}<small>${[c.h ? c.h + ' h' : '', c.ano].filter(Boolean).join(' · ')}</small></li>`).join('')}</ul></div>` : '';
-  return `<p class="painel-cat">Baú de cursos complementares · 2001 a 2026</p><h2 id="painel-titulo">${total} cursos, mais de ${Math.floor(horas / 100) * 100} horas</h2>${daArea}
-    <div class="barras" role="list">${res.map((a) => `<div class="barra" role="listitem"><span class="barra-nome"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" fill="${a.cor}"/>${icone(a.icone)}</svg>${a.nome}</span>
-      <span class="barra-trilho"><span class="barra-valor" style="width:${(a.n / max) * 100}%;background:${a.cor}"></span></span><span class="barra-num">×${a.n}<small>${a.h ? a.h + ' h' : ''}</small></span></div>`).join('')}</div>
-    <p class="nota-barras">Horas somam só os cursos com carga horária informada.</p>
-    ${cursos.map((p) => `<details class="periodo"><summary><strong>${p.periodo}</strong> · ${p.titulo} <span>(${p.itens.reduce((t, c) => t + (c.n || 1), 0)})</span></summary>
-      <ul>${p.itens.map((c) => `<li><span class="ponto-area" style="background:${areas[c.a].cor}" title="${areas[c.a].nome}"></span>${c.t}<small>${[c.h ? c.h + ' h' : '', c.ano].filter(Boolean).join(' · ')}</small></li>`).join('')}</ul></details>`).join('')}`;
+  $$('.barra', raiz).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.area === areaId)));
+  raiz.querySelector('.lista-cursos').classList.toggle('filtrada', !!ar);
+  $$('.periodo', raiz).forEach((d) => {
+    const itens = $$('li', d);
+    let n = 0;
+    itens.forEach((li) => { const ok = !ar || li.dataset.a === areaId; li.hidden = !ok; if (ok) n += +li.dataset.n; });
+    d.hidden = ar && n === 0;
+    if (ar) d.open = n > 0;
+    d.querySelector('.periodo-n').textContent = `(${n})`;
+  });
+  const aviso = raiz.querySelector('.filtro-ativo');
+  aviso.hidden = !ar;
+  if (ar) aviso.querySelector('span').textContent = `Mostrando ${cursosDaArea(areaId).reduce((t, c) => t + (c.n || 1), 0)} cursos de ${ar.nome}.`;
+}
+function ligarBau(raiz, areaId) {
+  raiz.querySelector('.barras').addEventListener('click', (e) => {
+    const b = e.target.closest('.barra'); if (!b) return;
+    filtrarBau(raiz, b.getAttribute('aria-pressed') === 'true' ? null : b.dataset.area);
+  });
+  raiz.querySelector('.filtro-limpar').addEventListener('click', () => filtrarBau(raiz, null));
+  if (areaId) filtrarBau(raiz, areaId);
 }
 
 iniciar();
